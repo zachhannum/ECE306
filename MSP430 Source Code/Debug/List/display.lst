@@ -1,0 +1,136 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  17:03:32
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\display.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\display.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\display.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\display.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\display.c
+      1          //------------------------------------------------------------------------------
+      2          //  File display.c
+      3          //  Description: This file processes the LCD display
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //
+     10          // Globals
+     11          // -------
+     12          // extern char *display_1;
+     13          // extern char *display_2;
+     14          // extern char *display_3;
+     15          // extern char *display_4;
+     16          // extern char posL1;
+     17          // extern char posL2;
+     18          // extern char posL3;
+     19          // extern char posL4;
+     20          //------------------------------------------------------------------------------
+     21          
+     22          //------------------------------------------------------------------------------
+     23          
+     24          #include  "msp430.h"
+     25          #include  "functions.h"
+     26          #include  "macros.h"
+     27          
+     28          extern char *display_1;
+     29          extern char *display_2;
+     30          extern char *display_3;
+     31          extern char *display_4;
+     32          extern char posL1;
+     33          extern char posL2;
+     34          extern char posL3;
+     35          extern char posL4;
+     36          
+
+   \                                 In  segment CODE, align 2
+     37          void Display_Process(void){
+   \                     Display_Process:
+     38          //------------------------------------------------------------------------------
+     39          // Output display lines 1-4 to LCD
+     40          //
+     41          // Globals
+     42          // -------
+     43          // extern char *display_1;
+     44          // extern char *display_2;
+     45          // extern char *display_3;
+     46          // extern char *display_4;
+     47          // extern char posL1;
+     48          // extern char posL2;
+     49          // extern char posL3;
+     50          // extern char posL4;
+     51          //
+     52          // Ports
+     53          // LCD_HOME_L1
+     54          // LCD_HOME_L2
+     55          // LCD_HOME_L3
+     56          // LCD_HOME_L4
+     57          //------------------------------------------------------------------------------
+     58            ClrDisplay();
+   \   000000   ........     CALLA   #ClrDisplay
+     59            lcd_out(display_1, LCD_HOME_L1, posL1);
+   \   000004   5E42....     MOV.B   &posL1, R14
+   \   000008   7D408000     MOV.B   #0x80, R13
+   \   00000C   1C42....     MOV.W   &display_1, R12
+   \   000010   ........     CALLA   #lcd_out
+     60            lcd_out(display_2, LCD_HOME_L2, posL2);
+   \   000014   5E42....     MOV.B   &posL2, R14
+   \   000018   7D40A000     MOV.B   #0xa0, R13
+   \   00001C   1C42....     MOV.W   &display_2, R12
+   \   000020   ........     CALLA   #lcd_out
+     61            lcd_out(display_3, LCD_HOME_L3, posL3);
+   \   000024   5E42....     MOV.B   &posL3, R14
+   \   000028   7D40C000     MOV.B   #0xc0, R13
+   \   00002C   1C42....     MOV.W   &display_3, R12
+   \   000030   ........     CALLA   #lcd_out
+     62            lcd_out(display_4, LCD_HOME_L4, posL4);
+   \   000034   5E42....     MOV.B   &posL4, R14
+   \   000038   7D40E000     MOV.B   #0xe0, R13
+   \   00003C   1C42....     MOV.W   &display_4, R12
+   \   000040   ........     BRA     #lcd_out
+     63          }
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      4   Display_Process
+        4   -> ClrDisplay
+        0   -> lcd_out
+        4   -> lcd_out
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      68  Display_Process
+
+ 
+ 68 bytes in segment CODE
+ 
+ 68 bytes of CODE memory
+
+Errors: none
+Warnings: none

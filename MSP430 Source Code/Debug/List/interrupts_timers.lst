@@ -1,0 +1,350 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  23:55:47
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\interrupts_timers.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\interrupts_timers.c" -lC "C:\ECE-306
+#        Code\Project 7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj"
+#        --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  
+#        C:\ECE-306 Code\Project 7\Debug\List\interrupts_timers.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\interrupts_timers.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\interrupts_timers.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: main.c
+      3          //  Description: This file contains the Main Routine - "While" Operating System
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //------------------------------------------------------------------------------
+     10          
+     11          //------------------------------------------------------------------------------
+     12          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x352
+   \   unsigned short volatile TA0CCR0
+   \                     TA0CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x36e
+   \   unsigned short volatile TA0IV
+   \                     TA0IV:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x392
+   \   unsigned short volatile TA1CCR0
+   \                     TA1CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x3ae
+   \   unsigned short volatile TA1IV
+   \                     TA1IV:
+   \   000000                DS8 2
+     13          #include  "functions.h"
+     14          #include  "macros.h"
+     15          
+     16          extern int sw1IsDebouncing;
+     17          extern int sw2IsDebouncing;
+     18          extern volatile unsigned int sw1DebounceCount;
+     19          extern volatile unsigned int sw2DebounceCount;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     20          volatile unsigned int timer;
+   \                     timer:
+   \   000000                DS8 2
+     21          extern volatile unsigned long int time;
+     22          extern volatile int countTime; 
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     23          volatile int minuteTime = 0;
+   \                     minuteTime:
+   \   000000                DS8 2
+     24          
+     25          extern volatile int adc_time;
+     26          extern volatile int count_adc_time;
+     27          
+     28          #pragma vector = TIMER0_A0_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+     29          __interrupt void Timer0_A0_ISR(void){
+   \                     Timer0_A0_ISR:
+     30          //===========================================================================
+     31          // Function name: Timer0_A0_ISR 
+     32          //
+     33          // Description: This timer interrupt controls the debounce time for SW1 and
+     34          //              SW2. It also turns itself off when the debounce is complete.
+     35          //
+     36          // Interrupt Trigger: CCR0
+     37          //
+     38          // Passed : no variables passed
+     39          // Locals: no variables declared
+     40          // Returned: no values returned
+     41          // Globals: 
+     42          //  extern int sw1IsDebouncing;
+     43          //  extern int sw2IsDebouncing;
+     44          //  extern volatile unsigned int sw1DebounceCount;
+     45          //  extern volatile unsigned int sw2DebounceCount;
+     46          //
+     47          // Author:  Zach Hannum
+     48          // Date: Feb 2016
+     49          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     50          //===========================================================================
+     51            
+     52            if(countTime){
+   \   000000   8293....     CMP.W   #0x0, &countTime
+   \   000004   0424         JEQ     ??Timer0_A0_ISR_0
+     53            
+     54              time = time + 1;
+   \   000006   9253....     ADD.W   #0x1, &time
+   \   00000A   8263....     ADDC.W  #0x0, &time + 2
+     55            }
+     56            if(count_adc_time){
+   \                     ??Timer0_A0_ISR_0:
+   \   00000E   8293....     CMP.W   #0x0, &count_adc_time
+   \   000012   0224         JEQ     ??Timer0_A0_ISR_1
+     57              adc_time = adc_time + 1;
+   \   000014   9253....     ADD.W   #0x1, &adc_time
+     58            }
+     59            if(timer > TIMER_MAX) timer = ZERO;
+   \                     ??Timer0_A0_ISR_1:
+   \   000018   B2901127.... CMP.W   #0x2711, &timer
+   \   00001E   0228         JNC     ??Timer0_A0_ISR_2
+   \   000020   8243....     MOV.W   #0x0, &timer
+     60            timer = timer + ONE;
+   \                     ??Timer0_A0_ISR_2:
+   \   000024   9253....     ADD.W   #0x1, &timer
+     61            TA0CCR0 += TA0CCR0_INTERVAL; // Add Offset to TACCR0
+   \   000028   B250E9005203 ADD.W   #0xe9, &0x352
+     62          }
+   \   00002E   0013         RETI
+   \   000030                REQUIRE TA0CCR0
+     63          //----------------------------------------------------------------------------
+     64          // 
+     65          //===========================================================================
+     66          // Function name: Timer0_A1_ISR 
+     67          //
+     68          // Description: TimerA0 1-TWO, Overflow Interrupt Vector (TAIV) handler.
+     69          //              Does nothing right now, Overflow is disabled.
+     70          //
+     71          // Passed : no variables passed
+     72          // Locals: no variables declared
+     73          // Returned: no values returned
+     74          // Globals: 
+     75          //  extern int sw1IsDebouncing;
+     76          //  extern int sw2IsDebouncing;
+     77          //  extern volatile unsigned int sw1DebounceCount;
+     78          //  extern volatile unsigned int sw2DebounceCount;
+     79          //
+     80          // Author:  Zach Hannum
+     81          // Date: Feb 2016
+     82          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     83          //===========================================================================
+     84          #pragma vector=TIMER0_A1_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+     85          __interrupt void TIMER0_A1_ISR(void){
+   \                     TIMER0_A1_ISR:
+   \   000000   0F12         PUSH.W  R15
+     86            switch(__even_in_range(TA0IV,FOURTEEN)){
+   \   000002   1F426E03     MOV.W   &0x36e, R15
+   \   000006   E00F         ADDA    R15, PC
+   \                     `?<Jumptable for TIMER0_A1_ISR>_0`:
+   \   000008   073C         JMP     ??TIMER0_A1_ISR_1
+   \   00000A   063C         JMP     ??TIMER0_A1_ISR_1
+   \   00000C   053C         JMP     ??TIMER0_A1_ISR_1
+   \   00000E   043C         JMP     ??TIMER0_A1_ISR_1
+   \   000010   033C         JMP     ??TIMER0_A1_ISR_1
+   \   000012   023C         JMP     ??TIMER0_A1_ISR_1
+   \   000014   013C         JMP     ??TIMER0_A1_ISR_1
+   \   000016   003C         JMP     ??TIMER0_A1_ISR_1
+     87            case ZERO: break; // No interrupt
+     88            case TWO: // CCR1 not used
+     89              //TA0CCR1 += TA0CCR1_INTERVAL; // Add Offset to TACCR1
+     90              break;
+     91            case FOUR: // CCR2 not used
+     92              //TA0CCR2 += TA0CCR2_INTERVAL; // Add Offset to TACCR2
+     93              break;
+     94            case FOURTEEN: // overflow
+     95              break;
+     96            default: break;
+     97            }
+     98          }
+   \                     ??TIMER0_A1_ISR_1:
+   \   000018   3F41         POP.W   R15
+   \   00001A   0013         RETI
+   \   00001C                REQUIRE TA0IV
+     99          //----------------------------------------------------------------------------
+    100          
+    101          #pragma vector = TIMER1_A0_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+    102          __interrupt void Timer1_A0_ISR(void){
+   \                     Timer1_A0_ISR:
+   \   000000   3F15         PUSHM.W #0x4, R15
+    103          //===========================================================================
+    104          // Function name: Timer1_A0_ISR 
+    105          //
+    106          // Description: This timer interrupt controls the debounce time for SW1 and
+    107          //              SW2. It also turns itself off when the debounce is complete.
+    108          //
+    109          // Interrupt Trigger: CCR0
+    110          //
+    111          // Passed : no variables passed
+    112          // Locals: no variables declared
+    113          // Returned: no values returned
+    114          // Globals: 
+    115          //  extern int sw1IsDebouncing;
+    116          //  extern int sw2IsDebouncing;
+    117          //  extern volatile unsigned int sw1DebounceCount;
+    118          //  extern volatile unsigned int sw2DebounceCount;
+    119          //
+    120          // Author:  Zach Hannum
+    121          // Date: Feb 2016
+    122          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+    123          //===========================================================================
+    124            
+    125            Display_Process();
+   \   000002   ........     CALLA   #Display_Process
+    126            TA1CCR0 += TA1CCR0_INTERVAL; // Add Offset to TACCR0
+   \   000006   B25024F49203 ADD.W   #0xf424, &0x392
+    127          }
+   \   00000C   3C17         POPM.W  #0x4, R15
+   \   00000E   0013         RETI
+   \   000010                REQUIRE TA1CCR0
+    128          //----------------------------------------------------------------------------
+    129          // 
+    130          //===========================================================================
+    131          // Function name: Timer1_A1_ISR 
+    132          //
+    133          // Description: TimerA0 1-TWO, Overflow Interrupt Vector (TAIV) handler.
+    134          //              Does nothing right now, Overflow is disabled.
+    135          //
+    136          // Passed : no variables passed
+    137          // Locals: no variables declared
+    138          // Returned: no values returned
+    139          // Globals: 
+    140          //  extern int sw1IsDebouncing;
+    141          //  extern int sw2IsDebouncing;
+    142          //  extern volatile unsigned int sw1DebounceCount;
+    143          //  extern volatile unsigned int sw2DebounceCount;
+    144          //
+    145          // Author:  Zach Hannum
+    146          // Date: Feb 2016
+    147          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+    148          //===========================================================================
+    149          #pragma vector=TIMER1_A1_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+    150          __interrupt void TIMER1_A1_ISR(void){
+   \                     TIMER1_A1_ISR:
+   \   000000   0F12         PUSH.W  R15
+    151            switch(__even_in_range(TA1IV,FOURTEEN)){
+   \   000002   1F42AE03     MOV.W   &0x3ae, R15
+   \   000006   E00F         ADDA    R15, PC
+   \                     `?<Jumptable for TIMER1_A1_ISR>_0`:
+   \   000008   073C         JMP     ??TIMER1_A1_ISR_1
+   \   00000A   063C         JMP     ??TIMER1_A1_ISR_1
+   \   00000C   053C         JMP     ??TIMER1_A1_ISR_1
+   \   00000E   043C         JMP     ??TIMER1_A1_ISR_1
+   \   000010   033C         JMP     ??TIMER1_A1_ISR_1
+   \   000012   023C         JMP     ??TIMER1_A1_ISR_1
+   \   000014   013C         JMP     ??TIMER1_A1_ISR_1
+   \   000016   003C         JMP     ??TIMER1_A1_ISR_1
+    152            case ZERO: break; // No interrupt
+    153            case TWO: // CCR1 not used
+    154              //TA0CCR1 += TA0CCR1_INTERVAL; // Add Offset to TACCR1
+    155              break;
+    156            case FOUR: // CCR2 not used
+    157              //TA0CCR2 += TA0CCR2_INTERVAL; // Add Offset to TACCR2
+    158              break;
+    159            case FOURTEEN: // overflow
+    160              break;
+    161            default: break;
+    162            }
+    163          }
+   \                     ??TIMER1_A1_ISR_1:
+   \   000018   3F41         POP.W   R15
+   \   00001A   0013         RETI
+   \   00001C                REQUIRE TA1IV
+
+   \                                 In  segment INTVEC, offset 0x50, root
+   \                     `??TIMER1_A1_ISR::??INTVEC 80`:
+   \   000050   ....         DC16    TIMER1_A1_ISR
+
+   \                                 In  segment INTVEC, offset 0x52, root
+   \                     `??Timer1_A0_ISR::??INTVEC 82`:
+   \   000052   ....         DC16    Timer1_A0_ISR
+
+   \                                 In  segment INTVEC, offset 0x58, root
+   \                     `??TIMER0_A1_ISR::??INTVEC 88`:
+   \   000058   ....         DC16    TIMER0_A1_ISR
+
+   \                                 In  segment INTVEC, offset 0x5a, root
+   \                     `??Timer0_A0_ISR::??INTVEC 90`:
+   \   00005A   ....         DC16    Timer0_A0_ISR
+    164          //----------------------------------------------------------------------------
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      6   TIMER0_A1_ISR
+      6   TIMER1_A1_ISR
+      4   Timer0_A0_ISR
+     12   Timer1_A0_ISR
+       12   -> Display_Process
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  TA0CCR0
+       2  TA0IV
+       2  TA1CCR0
+       2  TA1IV
+      28  TIMER0_A1_ISR
+       2  TIMER0_A1_ISR::??INTVEC 88
+      28  TIMER1_A1_ISR
+       2  TIMER1_A1_ISR::??INTVEC 80
+      48  Timer0_A0_ISR
+       2  Timer0_A0_ISR::??INTVEC 90
+      16  Timer1_A0_ISR
+       2  Timer1_A0_ISR::??INTVEC 82
+       2  minuteTime
+       2  timer
+
+ 
+   8 bytes in segment DATA16_AN
+   4 bytes in segment DATA16_Z
+   8 bytes in segment INTVEC
+ 120 bytes in segment ISR_CODE
+ 
+ 120 bytes of CODE  memory
+   0 bytes of CONST memory (+ 8 bytes shared)
+   4 bytes of DATA  memory (+ 8 bytes shared)
+
+Errors: none
+Warnings: none

@@ -1,0 +1,106 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  17:03:33
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\shapes.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\shapes.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\shapes.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\shapes.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\shapes.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: timers.c
+      3          //  Description: This file performs the logic to make the car go in a circle,
+      4          //               a figure 8, and a triangle
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //
+     10          // Globals
+     11          // --------
+     12          //------------------------------------------------------------------------------
+     13          
+     14          //------------------------------------------------------------------------------
+     15          
+     16          #include  "msp430.h"
+     17          #include  "functions.h"
+     18          #include  "macros.h"
+     19          
+     20          extern char *display_1;
+     21          extern char *display_2;
+     22          extern char *display_3;
+     23          extern char *display_4;
+     24          extern char posL1;
+     25          extern char posL2;
+     26          extern char posL3;
+     27          extern char posL4;
+     28          extern volatile unsigned int Time_Sequence;
+     29          
+
+   \                                 In  segment CODE, align 2
+     30          void shape(void){
+   \                     shape:
+     31          //===========================================================================
+     32          // Function name: shape
+     33          //
+     34          // Description: This function drives the car forward 1 sec, reverse 2 secs,
+     35          //              forward 1 sec, clockwise for 1 sec, and counter-clockwise for 1 sec
+     36          //
+     37          // Passed : no variables passed
+     38          // Locals: count
+     39          // Returned: no values returned
+     40          // Globals: 
+     41          //
+     42          // Author:  Zach Hannum
+     43          // Date: Feb 2016
+     44          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     45          //===========================================================================
+     46          
+     47            
+     48          }
+   \   000000   1001         RETA
+     49            
+     50            
+     51            
+     52            
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      4   shape
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  shape
+
+ 
+ 2 bytes in segment CODE
+ 
+ 2 bytes of CODE memory
+
+Errors: none
+Warnings: none

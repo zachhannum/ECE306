@@ -1,0 +1,257 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           11/Apr/2016  13:43:31
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\interrupt_ports.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\interrupt_ports.c" -lC "C:\ECE-306
+#        Code\Project 7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj"
+#        --no_cse --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\interrupt_ports.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\interrupt_ports.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\interrupt_ports.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: main.c
+      3          //  Description: This file contains the Main Routine - "While" Operating System
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //
+     10          //
+     11          // Globals 
+     12          //---------
+     13          // volatile unsigned char control_state[CNTL_STATE_INDEX]; //
+     14          // volatile unsigned int Time_Sequence;
+     15          // char led_smclk;
+     16          // volatile char one_time;
+     17          // volatile unsigned int five_msec_count;
+     18          // extern char display_line_1[11];             
+     19          // extern char display_line_2[11];            
+     20          // extern char display_line_3[11];             
+     21          // extern char display_line_4[11];             
+     22          // extern char *display_1;                     // Line 1 of LCD Display 
+     23          // extern char *display_2;                     // Line 2 of LCD Display  
+     24          // extern char *display_3;                     // Line 3 of LCD Display  
+     25          // extern char *display_4;                     // Line 4 of LCD Display 
+     26          // char posL1;
+     27          // char posL2;
+     28          // char posL3;
+     29          // char posL4;
+     30          // char size_count;
+     31          // char big;
+     32          //------------------------------------------------------------------------------
+     33          
+     34          //------------------------------------------------------------------------------
+     35          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x5cc
+   \   union <unnamed> _A_UCA0RXBUF_L
+   \                     _A_UCA0RXBUF_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5de
+   \   unsigned short volatile UCA0IV
+   \                     UCA0IV:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5ec
+   \   union <unnamed> _A_UCA1RXBUF_L
+   \                     _A_UCA1RXBUF_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5fe
+   \   unsigned short volatile UCA1IV
+   \                     UCA1IV:
+   \   000000                DS8 2
+     36          #include  "functions.h"
+     37          #include  "macros.h"
+     38          
+     39          // global variables
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     40          volatile unsigned int fram_rx_ring_wr;
+   \                     fram_rx_ring_wr:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     41          volatile unsigned int cpu_rx_ring_wr;
+   \                     cpu_rx_ring_wr:
+   \   000000                DS8 2
+     42          extern volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+     43          extern volatile char CPU_Char_Rx[SMALL_RING_SIZE];
+     44          extern volatile int send_ready;
+     45          extern volatile int increment;
+     46          //------------------------------------------------------------------------------
+     47          #pragma vector=USCI_A0_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+     48          __interrupt void USCI_A0_ISR(void){
+   \                     USCI_A0_ISR:
+   \   000000   3F15         PUSHM.W #0x4, R15
+     49            unsigned int temp;
+     50            char tempchar;
+     51            unsigned int tempUCA = UCA0IV;
+   \   000002   1C42DE05     MOV.W   &0x5de, R12
+     52            switch(tempUCA){
+   \   000006   0E4C         MOV.W   R12, R14
+   \   000008   1E83         SUB.W   #0x1, R14
+   \   00000A   1724         JEQ     ??USCI_A0_ISR_3
+   \   00000C   1E83         SUB.W   #0x1, R14
+   \   00000E   0224         JEQ     ??USCI_A0_ISR_4
+   \   000010   2E83         SUB.W   #0x2, R14
+   \   000012   133C         JMP     ??USCI_A0_ISR_3
+     53            case ONE: // Vector 0 - no interrupt
+     54              break;
+     55            case TWO: // Vector 2 - RXIFG
+     56              increment = ONE;
+   \                     ??USCI_A0_ISR_4:
+   \   000014   9243....     MOV.W   #0x1, &increment
+     57              temp = fram_rx_ring_wr;
+   \   000018   1F42....     MOV.W   &fram_rx_ring_wr, R15
+     58              tempchar = UCA0RXBUF;
+   \   00001C   1E42CC05     MOV.W   &0x5cc, R14
+   \   000020   4D4E         MOV.B   R14, R13
+     59              FRAM_Char_Rx[temp] = tempchar; // RX -> USB_Char_Rx character
+   \   000022   CF4D....     MOV.B   R13, FRAM_Char_Rx(R15)
+     60              if (++fram_rx_ring_wr >= (SMALL_RING_SIZE)){
+   \   000026   1E42....     MOV.W   &fram_rx_ring_wr, R14
+   \   00002A   1E53         ADD.W   #0x1, R14
+   \   00002C   824E....     MOV.W   R14, &fram_rx_ring_wr
+   \   000030   3E900500     CMP.W   #0x5, R14
+   \   000034   0228         JNC     ??USCI_A0_ISR_3
+     61                fram_rx_ring_wr = BEGINNING; // Circular buffer back to beginning
+   \   000036   8243....     MOV.W   #0x0, &fram_rx_ring_wr
+     62              }
+     63              break;
+     64            case FOUR: // Vector 4 – TXIFG
+     65              
+     66              break;
+     67            default: break;
+     68            }
+     69          }
+   \                     ??USCI_A0_ISR_3:
+   \   00003A   3C17         POPM.W  #0x4, R15
+   \   00003C   0013         RETI
+   \   00003E                REQUIRE UCA0IV
+   \   00003E                REQUIRE _A_UCA0RXBUF_L
+     70          //------------------------------------------------------------------------------
+     71          
+     72          //------------------------------------------------------------------------------
+     73          #pragma vector=USCI_A1_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+     74          __interrupt void USCI_A1_ISR(void){
+   \                     USCI_A1_ISR:
+   \   000000   3F15         PUSHM.W #0x4, R15
+     75            unsigned int temp;
+     76            unsigned int tempUCA = UCA1IV;
+   \   000002   1D42FE05     MOV.W   &0x5fe, R13
+     77            char tempchar;
+     78            switch(tempUCA){
+   \   000006   0E4D         MOV.W   R13, R14
+   \   000008   0E83         SUB.W   #0x0, R14
+   \   00000A   1724         JEQ     ??USCI_A1_ISR_3
+   \   00000C   2E83         SUB.W   #0x2, R14
+   \   00000E   0224         JEQ     ??USCI_A1_ISR_4
+   \   000010   2E83         SUB.W   #0x2, R14
+   \   000012   133C         JMP     ??USCI_A1_ISR_3
+     79            case ZERO: // Vector 0 - no interrupt
+     80              break;
+     81            case TWO: // Vector 2 - RXIFG
+     82              increment = ONE;
+   \                     ??USCI_A1_ISR_4:
+   \   000014   9243....     MOV.W   #0x1, &increment
+     83              temp = cpu_rx_ring_wr;
+   \   000018   1F42....     MOV.W   &cpu_rx_ring_wr, R15
+     84              tempchar = UCA1RXBUF;
+   \   00001C   1E42EC05     MOV.W   &0x5ec, R14
+   \   000020   4C4E         MOV.B   R14, R12
+     85              CPU_Char_Rx[temp] = tempchar; // RX -> USB_Char_Rx character
+   \   000022   CF4C....     MOV.B   R12, CPU_Char_Rx(R15)
+     86              if (++cpu_rx_ring_wr >= (SMALL_RING_SIZE)){
+   \   000026   1E42....     MOV.W   &cpu_rx_ring_wr, R14
+   \   00002A   1E53         ADD.W   #0x1, R14
+   \   00002C   824E....     MOV.W   R14, &cpu_rx_ring_wr
+   \   000030   3E900500     CMP.W   #0x5, R14
+   \   000034   0228         JNC     ??USCI_A1_ISR_3
+     87                cpu_rx_ring_wr = BEGINNING; // Circular buffer back to beginning
+   \   000036   8243....     MOV.W   #0x0, &cpu_rx_ring_wr
+     88              }
+     89              break;
+     90            case FOUR: // Vector 4 – TXIFG
+     91              break;
+     92            default: break;
+     93            }
+     94          }
+   \                     ??USCI_A1_ISR_3:
+   \   00003A   3C17         POPM.W  #0x4, R15
+   \   00003C   0013         RETI
+   \   00003E                REQUIRE UCA1IV
+   \   00003E                REQUIRE _A_UCA1RXBUF_L
+
+   \                                 In  segment INTVEC, offset 0x56, root
+   \                     `??USCI_A1_ISR::??INTVEC 86`:
+   \   000056   ....         DC16    USCI_A1_ISR
+
+   \                                 In  segment INTVEC, offset 0x60, root
+   \                     `??USCI_A0_ISR::??INTVEC 96`:
+   \   000060   ....         DC16    USCI_A0_ISR
+     95          //------------------------------------------------------------------------------
+     96          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+     12   USCI_A0_ISR
+     12   USCI_A1_ISR
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  UCA0IV
+       2  UCA1IV
+      62  USCI_A0_ISR
+       2  USCI_A0_ISR::??INTVEC 96
+      62  USCI_A1_ISR
+       2  USCI_A1_ISR::??INTVEC 86
+       2  _A_UCA0RXBUF_L
+       2  _A_UCA1RXBUF_L
+       2  cpu_rx_ring_wr
+       2  fram_rx_ring_wr
+
+ 
+   8 bytes in segment DATA16_AN
+   4 bytes in segment DATA16_Z
+   4 bytes in segment INTVEC
+ 124 bytes in segment ISR_CODE
+ 
+ 124 bytes of CODE  memory
+   0 bytes of CONST memory (+ 4 bytes shared)
+   4 bytes of DATA  memory (+ 8 bytes shared)
+
+Errors: none
+Warnings: none

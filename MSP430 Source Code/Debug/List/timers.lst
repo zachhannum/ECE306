@@ -1,0 +1,149 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  17:03:33
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\timers.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\timers.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\timers.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\timers.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\timers.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: timers.c
+      3          //  Description: This file initializes timers contains functions 
+      4          //               for timers
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //
+     10          // Globals
+     11          // --------
+     12          // extern volatile unsigned int Time_Sequence;
+     13          // extern volatile char one_time;
+     14          // extern volatile unsigned int five_msec_count;
+     15          //------------------------------------------------------------------------------
+     16          
+     17          //------------------------------------------------------------------------------
+     18          
+     19          #include  "msp430.h"
+     20          #include  "functions.h"
+     21          #include  "macros.h"
+     22          
+     23          extern volatile unsigned int Time_Sequence;
+     24          extern volatile char one_time;
+     25          extern volatile unsigned int five_msec_count;
+     26          extern volatile unsigned int timer;
+     27          extern volatile int black_line_detected;
+     28          
+     29          
+
+   \                                 In  segment CODE, align 2
+     30          void Init_Timers(void){
+   \                     Init_Timers:
+     31          //----------------------------------------------------------------------------
+     32          // 
+     33          //===========================================================================
+     34          // Function name: Init_Timers 
+     35          //
+     36          // Description: Initializes Timers
+     37          //
+     38          // Passed : no variables passed
+     39          // Locals: no variables declared
+     40          // Returned: no values returned
+     41          // Globals: 
+     42          //
+     43          // Author:  Zach Hannum
+     44          // Date: Feb 2016
+     45          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     46          //===========================================================================
+     47            Init_Timer_A0(); //
+   \   000000   ........     CALLA   #Init_Timer_A0
+     48            Init_Timer_A1(); // 
+   \   000004   ........     CALLA   #Init_Timer_A1
+     49          //  Init_Timer_B0(); // 
+     50            Init_Timer_B1(); //  
+   \   000008   ........     CALLA   #Init_Timer_B1
+     51            Init_Timer_B2();   //  Required for provided compiled code to work
+   \   00000C   ........     BRA     #Init_Timer_B2
+     52          //------------------------------------------------------------------------------
+     53          }
+     54          
+
+   \                                 In  segment CODE, align 2
+     55          void sleep(int sleepTime){
+   \                     sleep:
+     56          //----------------------------------------------------------------------------
+     57          // 
+     58          //===========================================================================
+     59          // Function name: sleep 
+     60          //
+     61          // Description: sleeps for the amount sleepTime
+     62          //
+     63          // Passed : sleepTime
+     64          // Locals: no variables declared
+     65          // Returned: no values returned
+     66          // Globals: timer
+     67          //
+     68          // Author:  Zach Hannum
+     69          // Date: Feb 2016
+     70          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     71          //===========================================================================
+     72            
+     73            timer = ZERO;
+   \   000000   8243....     MOV.W   #0x0, &timer
+     74            black_line_detected = 0;
+   \   000004   8243....     MOV.W   #0x0, &black_line_detected
+     75            while(timer < sleepTime);
+   \                     ??sleep_0:
+   \   000008   829C....     CMP.W   R12, &timer
+   \   00000C   FD2B         JNC     ??sleep_0
+     76            
+     77          }
+   \   00000E   1001         RETA
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      4   Init_Timers
+        4   -> Init_Timer_A0
+        4   -> Init_Timer_A1
+        4   -> Init_Timer_B1
+        0   -> Init_Timer_B2
+      4   sleep
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      16  Init_Timers
+      16  sleep
+
+ 
+ 32 bytes in segment CODE
+ 
+ 32 bytes of CODE memory
+
+Errors: none
+Warnings: none

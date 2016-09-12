@@ -1,0 +1,755 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           19/Apr/2016  21:47:40
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\ADC.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\ADC.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\ADC.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\ADC.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\ADC.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: ADC.c
+      3          //  Description: This file initializes 
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.ONE.3987 (SIX.40.ONE)
+      9          //
+     10          // Globals
+     11          // --------
+     12          //------------------------------------------------------------------------------
+     13          
+     14          //------------------------------------------------------------------------------
+     15          
+     16          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x700
+   \   union <unnamed> _A_ADC10CTL0_L
+   \                     _A_ADC10CTL0_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x702
+   \   union <unnamed> _A_ADC10CTL1_L
+   \                     _A_ADC10CTL1_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x704
+   \   union <unnamed> _A_ADC10CTL2_L
+   \                     _A_ADC10CTL2_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x70a
+   \   union <unnamed> _A_ADC10MCTL0_L
+   \                     _A_ADC10MCTL0_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x712
+   \   union <unnamed> _A_ADC10MEM0_L
+   \                     _A_ADC10MEM0_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x71a
+   \   union <unnamed> _A_ADC10IE_L
+   \                     _A_ADC10IE_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x71e
+   \   union <unnamed> _A_ADC10IV_L
+   \                     _A_ADC10IV_L:
+   \   000000                DS8 2
+     17          #include  "functions.h"
+     18          #include  "macros.h"
+     19          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     20          volatile unsigned int ADC_Right_Detector;
+   \                     ADC_Right_Detector:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     21          volatile unsigned int ADC_Left_Detector;
+   \                     ADC_Left_Detector:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     22          volatile unsigned int ADC_Thumb;
+   \                     ADC_Thumb:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     23          int current_ADC_channel;
+   \                     current_ADC_channel:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     24          volatile int black_line_detected = ZERO;
+   \                     black_line_detected:
+   \   000000                DS8 2
+     25          extern volatile int do_not_detect_black_line;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     26          volatile int black_line_detect = CLR;
+   \                     black_line_detect:
+   \   000000                DS8 2
+     27          
+     28          extern char *display_1;
+     29          extern char *display_2;
+     30          extern char *display_3;
+     31          extern char *display_4;
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     32          char adc_char[FOUR];
+   \                     adc_char:
+   \   000000                DS8 4
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     33          char r_adc_char[8] = "R: ";
+   \                     r_adc_char:
+   \   000000                DS8 8
+   \   000008                REQUIRE `?<Initializer for r_adc_char>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     34          char l_adc_char[8] = "L: ";
+   \                     l_adc_char:
+   \   000000                DS8 8
+   \   000008                REQUIRE `?<Initializer for l_adc_char>`
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     35          char v_adc_char[FIVE];
+   \                     v_adc_char:
+   \   000000                DS8 5
+     36          
+
+   \                                 In  segment DATA16_I, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     37          volatile int white_value = 50;
+   \                     white_value:
+   \   000000                DS8 2
+   \   000002                REQUIRE `?<Initializer for white_value>`
+
+   \                                 In  segment DATA16_I, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     38          volatile int black_value = 800;
+   \                     black_value:
+   \   000000                DS8 2
+   \   000002                REQUIRE `?<Initializer for black_value>`
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     39          int threshold;
+   \                     threshold:
+   \   000000                DS8 2
+     40          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     41          volatile int calibrate_white = CLR;
+   \                     calibrate_white:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     42          volatile int calibrate_black = CLR;
+   \                     calibrate_black:
+   \   000000                DS8 2
+     43          
+     44          extern volatile int display_adc;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     45          volatile int adc_time = ZERO;
+   \                     adc_time:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     46          volatile int count_adc_time = CLR;
+   \                     count_adc_time:
+   \   000000                DS8 2
+     47          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     48          int try_back = CLR;
+   \                     try_back:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     49          int try_forward = CLR;
+   \                     try_forward:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     50          int all_stop = CLR;
+   \                     all_stop:
+   \   000000                DS8 2
+     51          
+     52          
+     53          
+
+   \                                 In  segment CODE, align 2
+     54          void Init_ADC(void){
+   \                     Init_ADC:
+     55            //------------------------------------------------------------------------------
+     56            // Initializations Configurations
+     57            //
+     58            // Globals
+     59            // --------
+     60            //----------------------------------------------------------------------------
+     61            ADC10CTL0 = CLR_REG; // Clear ADC10CTL0
+   \   000000   82430007     MOV.W   #0x0, &0x700
+     62            ADC10CTL0 |= ADC10SHT_2; // 16 ADC clocks
+   \   000004   B2D000020007 BIS.W   #0x200, &0x700
+     63            ADC10CTL0 &= ~ADC10MSC; // Single Sequence
+   \   00000A   B2C080000007 BIC.W   #0x80, &0x700
+     64            ADC10CTL0 |= ADC10ON; // ADC ON - Core Enabled
+   \   000010   B2D010000007 BIS.W   #0x10, &0x700
+     65            ADC10CTL1 = CLR_REG; // Clear ADC10CTL1
+   \   000016   82430207     MOV.W   #0x0, &0x702
+     66            ADC10CTL1 |= ADC10SHS_0; // ADC10SC bit
+   \   00001A   924202070207 MOV.W   &0x702, &0x702
+     67            ADC10CTL1 |= ADC10SHP; // SAMPCON signal sourced from sampling timer
+   \   000020   B2D000020207 BIS.W   #0x200, &0x702
+     68            ADC10CTL1 &= ~ADC10ISSH; // The sample-input signal is not inverted.
+   \   000026   B2C000010207 BIC.W   #0x100, &0x702
+     69            ADC10CTL1 |= ADC10DIV_0; // ADC10_B clock divider – Divide by ONE.
+   \   00002C   924202070207 MOV.W   &0x702, &0x702
+     70            ADC10CTL1 |= ADC10SSEL_0; // MODCLK
+   \   000032   924202070207 MOV.W   &0x702, &0x702
+     71            ADC10CTL1 |= ADC10CONSEQ_0; // Single-channel, single-conversion
+   \   000038   924202070207 MOV.W   &0x702, &0x702
+     72            ADC10CTL2 = CLR_REG; // Clear ADC10CTL2
+   \   00003E   82430407     MOV.W   #0x0, &0x704
+     73            ADC10CTL2 |= ADC10DIV_0; // Pre-divide by ONE
+   \   000042   924204070407 MOV.W   &0x704, &0x704
+     74            ADC10CTL2 |= ADC10RES; // TEN-bit resolution
+   \   000048   B2D010000407 BIS.W   #0x10, &0x704
+     75            ADC10CTL2 &= ~ADC10DF; // Binary unsigned
+   \   00004E   B2C20407     BIC.W   #0x8, &0x704
+     76            ADC10CTL2 &= ~ADC10SR; // supports up to approximately 200 ksps
+   \   000052   A2C20407     BIC.W   #0x4, &0x704
+     77            ADC10MCTL0 = CLR_REG; // Clear ADC10MCTL0
+   \   000056   82430A07     MOV.W   #0x0, &0x70a
+     78            ADC10MCTL0 |= ADC10SREF_0; // V(R+) = AVCC and V(R-) = AVSS
+   \   00005A   92420A070A07 MOV.W   &0x70a, &0x70a
+     79            ADC10MCTL0 |= ADC10INCH_3; // Channel A3 Thumb Wheel
+   \   000060   B2D003000A07 BIS.W   #0x3, &0x70a
+     80            ADC10IE |= ADC10IE0; // Enable ADC conversion complete interrupt
+   \   000066   92D31A07     BIS.W   #0x1, &0x71a
+     81          }
+   \   00006A   1001         RETA
+   \   00006C                REQUIRE _A_ADC10CTL0_L
+   \   00006C                REQUIRE _A_ADC10CTL1_L
+   \   00006C                REQUIRE _A_ADC10CTL2_L
+   \   00006C                REQUIRE _A_ADC10MCTL0_L
+   \   00006C                REQUIRE _A_ADC10IE_L
+     82          
+     83          //------------------------------------------------------------------------------
+     84          // ADC10 interrupt service routine
+     85          // ADC_Right_Detector; // A00 ADC10INCH_0 - P1.ZERO
+     86          // ADC_Left_Detector; // A01 ADC10INCH_1 - P1.ONE
+     87          // ADC_Thumb; // A03 ADC10INCH_3 - P1.3
+     88          // ADC_Temp; // A10 ADC10INCH_10 – Temperature REF module
+     89          // ADC_Bat; // A11 ADC10INCH_11 - Internal
+     90          #pragma vector=ADC10_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+     91          __interrupt void ADC10_ISR(void){
+   \                     ADC10_ISR:
+   \   000000   0F12         PUSH.W  R15
+     92            switch(__even_in_range(ADC10IV,TWELVE)) {
+   \   000002   1F421E07     MOV.W   &0x71e, R15
+   \   000006   E00F         ADDA    R15, PC
+   \                     `?<Jumptable for ADC10_ISR>_0`:
+   \   000008   253C         JMP     ??ADC10_ISR_1
+   \   00000A   243C         JMP     ??ADC10_ISR_1
+   \   00000C   233C         JMP     ??ADC10_ISR_1
+   \   00000E   223C         JMP     ??ADC10_ISR_1
+   \   000010   213C         JMP     ??ADC10_ISR_1
+   \   000012   203C         JMP     ??ADC10_ISR_1
+   \   000014   003C         JMP     ??ADC10_ISR_5
+     93            case ZERO: break; // No interrupt
+     94            case TWO: break; // conversion result overflow
+     95            case FOUR: break; // conversion time overflow
+     96            case SIX: break; // ADC10HI
+     97            case EIGHT: break; // ADC10LO
+     98            case TEN: break; // ADC10IN
+     99            case TWELVE:
+    100              ADC10CTL0 &= ~ADC10ENC;
+   \                     ??ADC10_ISR_5:
+   \   000016   A2C30007     BIC.W   #0x2, &0x700
+    101              switch (ADC10MCTL0){
+   \   00001A   1F420A07     MOV.W   &0x70a, R15
+   \   00001E   0F83         SUB.W   #0x0, R15
+   \   000020   0524         JEQ     ??ADC10_ISR_2
+   \   000022   1F83         SUB.W   #0x1, R15
+   \   000024   0924         JEQ     ??ADC10_ISR_3
+   \   000026   2F83         SUB.W   #0x2, R15
+   \   000028   0E24         JEQ     ??ADC10_ISR_4
+   \   00002A   123C         JMP     ??ADC10_ISR_0
+    102              case DETECT_LEFT:
+    103                ADC10MCTL0 = ADC10INCH_1;
+   \                     ??ADC10_ISR_2:
+   \   00002C   92430A07     MOV.W   #0x1, &0x70a
+    104                ADC_Left_Detector = ADC10MEM0; //Channel A0
+   \   000030   92421207.... MOV.W   &0x712, &ADC_Left_Detector
+    105                break;
+   \   000036   0C3C         JMP     ??ADC10_ISR_0
+    106              case DETECT_RIGHT:
+    107                ADC10MCTL0 = ADC10INCH_3;
+   \                     ??ADC10_ISR_3:
+   \   000038   B24003000A07 MOV.W   #0x3, &0x70a
+    108                ADC_Right_Detector = ADC10MEM0; // Channel A1
+   \   00003E   92421207.... MOV.W   &0x712, &ADC_Right_Detector
+    109                break;
+   \   000044   053C         JMP     ??ADC10_ISR_0
+    110              case DETECT_THUMB:
+    111                ADC10MCTL0 = ADC10INCH_0;
+   \                     ??ADC10_ISR_4:
+   \   000046   82430A07     MOV.W   #0x0, &0x70a
+    112                ADC_Thumb = ADC10MEM0; // Channel A3
+   \   00004A   92421207.... MOV.W   &0x712, &ADC_Thumb
+    113                break;
+    114              default:
+    115                break;
+    116              }
+    117              ADC10CTL0 |= ADC10ENC;
+   \                     ??ADC10_ISR_0:
+   \   000050   A2D30007     BIS.W   #0x2, &0x700
+    118              // ADC10CTL0 | =  //start next sample
+    119              
+    120              
+    121              
+    122            default: break;
+    123            }
+    124          }
+   \                     ??ADC10_ISR_1:
+   \   000054   3F41         POP.W   R15
+   \   000056   0013         RETI
+   \   000058                REQUIRE _A_ADC10CTL0_L
+   \   000058                REQUIRE _A_ADC10MCTL0_L
+   \   000058                REQUIRE _A_ADC10MEM0_L
+   \   000058                REQUIRE _A_ADC10IV_L
+    125          //------------------------------------------------------------------------------
+    126          
+    127          //------------------------------------------------------------------------------
+
+   \                                 In  segment CODE, align 2
+    128          void ADC_Process(void){
+   \                     ADC_Process:
+   \   000000   0A12         PUSH.W  R10
+    129            
+    130           // int right_edge_detected = CLR;
+    131           // int left_edge_detected = CLR;
+    132            
+    133            
+    134            
+    135          //  if(calibrate_white){
+    136          //    int tempLeft = ADC_Left_Detector;
+    137          //    int tempRight = ADC_Right_Detector;
+    138          //    white_value = (tempRight + tempLeft) / 2;
+    139          //    calibrate_white = CLR;
+    140          //  }
+    141          //  
+    142          //  if(calibrate_black){
+    143          //    int tempLeft = ADC_Left_Detector;
+    144          //    int tempRight = ADC_Right_Detector;
+    145          //    black_value = (tempRight + tempLeft) /2;
+    146          //    calibrate_black = CLR;
+    147          //  }
+    148            
+    149            int tempBlack = black_value;
+   \   000002   1D42....     MOV.W   &black_value, R13
+    150            int tempWhite = white_value;
+   \   000006   1A42....     MOV.W   &white_value, R10
+    151            threshold = 400;
+   \   00000A   B2409001.... MOV.W   #0x190, &threshold
+    152           
+    153            while (ADC10CTL1 & BUSY); // Wait if ADC10 core is active
+   \                     ??ADC_Process_0:
+   \   000010   92B30207     BIT.W   #0x1, &0x702
+   \   000014   FD2F         JC      ??ADC_Process_0
+    154            ADC10CTL0 |= ADC10ENC + ADC10SC; // Sampling and conversion start
+   \   000016   B2D003000007 BIS.W   #0x3, &0x700
+    155             
+    156            
+    157            if(display_adc){
+   \   00001C   8293....     CMP.W   #0x0, &display_adc
+   \   000020   0E24         JEQ     ??ADC_Process_1
+    158              HEXtoBCD_l(ADC_Left_Detector);
+   \   000022   1C42....     MOV.W   &ADC_Left_Detector, R12
+   \   000026   ........     CALLA   #HEXtoBCD_l
+    159              HEXtoBCD_r(ADC_Right_Detector);
+   \   00002A   1C42....     MOV.W   &ADC_Right_Detector, R12
+   \   00002E   ........     CALLA   #HEXtoBCD_r
+    160              display_1 = l_adc_char;
+   \   000032   B240........ MOV.W   #l_adc_char, &display_1
+    161              display_2 = r_adc_char;
+   \   000038   B240........ MOV.W   #r_adc_char, &display_2
+    162            }
+    163          
+    164             
+    165            
+    166            if(black_line_detect){
+   \                     ??ADC_Process_1:
+   \   00003E   1F42....     MOV.W   &black_line_detect, R15
+    167              
+    168             
+    169              /*  int tempLeft = ADC_Left_Detector;
+    170              int tempRight = ADC_Right_Detector;
+    171              if(tempLeft < threshold){
+    172                left_edge_detected = YES;
+    173              }
+    174              if(tempRight < threshold){
+    175                right_edge_detected = YES;
+    176              }
+    177              
+    178              if(left_edge_detected && right_edge_detected){
+    179          //      count_adc_time = YES;
+    180          //      if(!all_stop){
+    181          //      if(try_back){
+    182          //        Right_Wheel_Reverse_On(500);
+    183          //        Left_Wheel_Reverse_On(450);
+    184          //        if(adc_time == 300){
+    185          //          adc_time = ZERO;
+    186          //          try_forward = YES;
+    187          //          try_back = CLR;
+    188          //        }
+    189          //      }
+    190          //      else if (try_forward){
+    191          //        Right_Wheel_Forward_On(500);
+    192          //        Left_Wheel_Forward_On(450);
+    193          //        if(adc_time == 600){
+    194          //          adc_time = ZERO;
+    195          //          try_forward =CLR;
+    196          //          all_stop = YES;
+    197          //          Wheels_Off();
+    198          //        }
+    199          //        
+    200          //      }
+    201          //      else
+    202          //        try_back = YES;
+    203          //      }
+    204                Wheels_Off();
+    205              }
+    206              
+    207              if(left_edge_detected && (right_edge_detected - 1)){
+    208                Wheels_Off();
+    209                sleep(100);
+    210                
+    211                Left_Wheel_Reverse_On(350);
+    212                Right_Wheel_Reverse_On(400);
+    213                sleep(150);
+    214                Wheels_Off();
+    215                sleep(100);
+    216                Right_Wheel_Reverse_On(400);
+    217                Left_Wheel_Forward_On(500);
+    218                sleep(150);
+    219                Right_Wheel_Forward_On(350);
+    220                Left_Wheel_Forward_On(320);
+    221                sleep(150);
+    222                Wheels_Off();
+    223              }
+    224              else if(right_edge_detected && (left_edge_detected - 1)){
+    225                Wheels_Off();
+    226                sleep(100);
+    227                Left_Wheel_Reverse_On(350);
+    228                Right_Wheel_Reverse_On(400);
+    229                sleep(150);
+    230                Wheels_Off();
+    231                sleep(100);
+    232                Left_Wheel_Reverse_On(400);
+    233                Right_Wheel_Forward_On(500);
+    234                sleep(150);
+    235                Right_Wheel_Forward_On(350);
+    236                Left_Wheel_Forward_On(320);
+    237                sleep(150);
+    238                Wheels_Off();
+    239              }
+    240              else if ((right_edge_detected -1) && (left_edge_detected - 1)) {
+    241                Right_Wheel_Forward_On(350);
+    242                Left_Wheel_Forward_On(320);
+    243                
+    244                
+    245              } */
+    246              
+    247              
+    248            }
+    249          }
+   \   000042   3A41         POP.W   R10
+   \   000044   1001         RETA
+   \   000046                REQUIRE _A_ADC10CTL1_L
+   \   000046                REQUIRE _A_ADC10CTL0_L
+    250          //------------------------------------------------------------------------------
+    251          
+
+   \                                 In  segment CODE, align 2
+    252          void HEXtoBCD_l(int hex_value){
+   \                     HEXtoBCD_l:
+    253            int value;
+    254            l_adc_char[3] = '0';
+   \   000000   F2403000.... MOV.B   #0x30, &l_adc_char + 3
+    255            if (hex_value > ONETHOUSAND){
+   \   000006   3C90E903     CMP.W   #0x3e9, R12
+   \   00000A   0538         JL      ??HEXtoBCD_l_2
+    256              hex_value = hex_value - ONETHOUSAND;
+   \   00000C   3C5018FC     ADD.W   #0xfc18, R12
+    257              l_adc_char[3] = '1';
+   \   000010   F2403100.... MOV.B   #0x31, &l_adc_char + 3
+    258            }
+    259            
+    260            value = ZERO;
+   \                     ??HEXtoBCD_l_2:
+   \   000016   0F43         MOV.W   #0x0, R15
+    261            if(hex_value < 100) l_adc_char[4] = '0';
+   \   000018   3C906400     CMP.W   #0x64, R12
+   \   00001C   0334         JGE     ??HEXtoBCD_l_0
+   \   00001E   F2403000.... MOV.B   #0x30, &l_adc_char + 4
+    262            while(hex_value > 99){
+   \                     ??HEXtoBCD_l_0:
+   \   000024   3C906400     CMP.W   #0x64, R12
+   \   000028   0C38         JL      ??HEXtoBCD_l_3
+    263              hex_value = hex_value - 100;
+   \   00002A   3C509CFF     ADD.W   #0xff9c, R12
+    264              value = value + 1;
+   \   00002E   1F53         ADD.W   #0x1, R15
+    265              l_adc_char[4] = 0x30 + value;
+   \   000030   0E12         PUSH.W  R14
+   \   000032   C14F0000     MOV.B   R15, 0(SP)
+   \   000036   3E41         POP.W   R14
+   \   000038   7E503000     ADD.B   #0x30, R14
+   \   00003C   C24E....     MOV.B   R14, &l_adc_char + 4
+   \   000040   F13F         JMP     ??HEXtoBCD_l_0
+    266            }
+    267            
+    268            value=ZERO;
+   \                     ??HEXtoBCD_l_3:
+   \   000042   0F43         MOV.W   #0x0, R15
+    269            while (hex_value > 9){
+   \                     ??HEXtoBCD_l_1:
+   \   000044   3C900A00     CMP.W   #0xa, R12
+   \   000048   0C38         JL      ??HEXtoBCD_l_4
+    270              hex_value = hex_value - 10;
+   \   00004A   3C50F6FF     ADD.W   #0xfff6, R12
+    271              value = value + 1;
+   \   00004E   1F53         ADD.W   #0x1, R15
+    272              l_adc_char[5] = 0x30 + value;
+   \   000050   0E12         PUSH.W  R14
+   \   000052   C14F0000     MOV.B   R15, 0(SP)
+   \   000056   3E41         POP.W   R14
+   \   000058   7E503000     ADD.B   #0x30, R14
+   \   00005C   C24E....     MOV.B   R14, &l_adc_char + 5
+   \   000060   F13F         JMP     ??HEXtoBCD_l_1
+    273            }
+    274            l_adc_char[6] = 0x30 + hex_value;
+   \                     ??HEXtoBCD_l_4:
+   \   000062   0E12         PUSH.W  R14
+   \   000064   C14C0000     MOV.B   R12, 0(SP)
+   \   000068   3E41         POP.W   R14
+   \   00006A   7E503000     ADD.B   #0x30, R14
+   \   00006E   C24E....     MOV.B   R14, &l_adc_char + 6
+    275          }
+   \   000072   1001         RETA
+    276          
+
+   \                                 In  segment CODE, align 2
+    277          void HEXtoBCD_r(int hex_value){
+   \                     HEXtoBCD_r:
+    278            int value;
+    279            r_adc_char[3] = '0';
+   \   000000   F2403000.... MOV.B   #0x30, &r_adc_char + 3
+    280            if (hex_value > ONETHOUSAND){
+   \   000006   3C90E903     CMP.W   #0x3e9, R12
+   \   00000A   0538         JL      ??HEXtoBCD_r_2
+    281              hex_value = hex_value - ONETHOUSAND;
+   \   00000C   3C5018FC     ADD.W   #0xfc18, R12
+    282              r_adc_char[3] = '1';
+   \   000010   F2403100.... MOV.B   #0x31, &r_adc_char + 3
+    283            }
+    284            
+    285            value = ZERO;
+   \                     ??HEXtoBCD_r_2:
+   \   000016   0F43         MOV.W   #0x0, R15
+    286            if(hex_value < 100) r_adc_char[4] = '0';
+   \   000018   3C906400     CMP.W   #0x64, R12
+   \   00001C   0334         JGE     ??HEXtoBCD_r_0
+   \   00001E   F2403000.... MOV.B   #0x30, &r_adc_char + 4
+    287            while(hex_value > 99){
+   \                     ??HEXtoBCD_r_0:
+   \   000024   3C906400     CMP.W   #0x64, R12
+   \   000028   0C38         JL      ??HEXtoBCD_r_3
+    288              hex_value = hex_value - 100;
+   \   00002A   3C509CFF     ADD.W   #0xff9c, R12
+    289              value = value + 1;
+   \   00002E   1F53         ADD.W   #0x1, R15
+    290              r_adc_char[4] = 0x30 + value;
+   \   000030   0E12         PUSH.W  R14
+   \   000032   C14F0000     MOV.B   R15, 0(SP)
+   \   000036   3E41         POP.W   R14
+   \   000038   7E503000     ADD.B   #0x30, R14
+   \   00003C   C24E....     MOV.B   R14, &r_adc_char + 4
+   \   000040   F13F         JMP     ??HEXtoBCD_r_0
+    291            }
+    292            
+    293            value=ZERO;
+   \                     ??HEXtoBCD_r_3:
+   \   000042   0F43         MOV.W   #0x0, R15
+    294            while (hex_value > 9){
+   \                     ??HEXtoBCD_r_1:
+   \   000044   3C900A00     CMP.W   #0xa, R12
+   \   000048   0C38         JL      ??HEXtoBCD_r_4
+    295              hex_value = hex_value - 10;
+   \   00004A   3C50F6FF     ADD.W   #0xfff6, R12
+    296              value = value + 1;
+   \   00004E   1F53         ADD.W   #0x1, R15
+    297              r_adc_char[5] = 0x30 + value;
+   \   000050   0E12         PUSH.W  R14
+   \   000052   C14F0000     MOV.B   R15, 0(SP)
+   \   000056   3E41         POP.W   R14
+   \   000058   7E503000     ADD.B   #0x30, R14
+   \   00005C   C24E....     MOV.B   R14, &r_adc_char + 5
+   \   000060   F13F         JMP     ??HEXtoBCD_r_1
+    298            }
+    299            r_adc_char[6] = 0x30 + hex_value;
+   \                     ??HEXtoBCD_r_4:
+   \   000062   0E12         PUSH.W  R14
+   \   000064   C14C0000     MOV.B   R12, 0(SP)
+   \   000068   3E41         POP.W   R14
+   \   00006A   7E503000     ADD.B   #0x30, R14
+   \   00006E   C24E....     MOV.B   R14, &r_adc_char + 6
+    300          }
+   \   000072   1001         RETA
+
+   \                                 In  segment INTVEC, offset 0x5c, root
+   \                     `??ADC10_ISR::??INTVEC 92`:
+   \   00005C   ....         DC16    ADC10_ISR
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for r_adc_char>`:
+   \   000000   523A2000     DC8 "R: "
+   \   000004   00000000     DC8 0, 0, 0, 0
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for l_adc_char>`:
+   \   000000   4C3A2000     DC8 "L: "
+   \   000004   00000000     DC8 0, 0, 0, 0
+
+   \                                 In  segment DATA16_ID, align 2, align-sorted
+   \                     `?<Initializer for white_value>`:
+   \   000000   3200         DC16 50
+
+   \                                 In  segment DATA16_ID, align 2, align-sorted
+   \                     `?<Initializer for black_value>`:
+   \   000000   2003         DC16 800
+    301          
+    302          
+    303          
+    304          
+    305          
+    306          
+    307          
+    308          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      6   ADC10_ISR
+      6   ADC_Process
+        6   -> HEXtoBCD_l
+        6   -> HEXtoBCD_r
+      6   HEXtoBCD_l
+      6   HEXtoBCD_r
+      4   Init_ADC
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ?<Initializer for black_value>
+       8  ?<Initializer for l_adc_char>
+       8  ?<Initializer for r_adc_char>
+       2  ?<Initializer for white_value>
+      88  ADC10_ISR
+       2  ADC10_ISR::??INTVEC 92
+       2  ADC_Left_Detector
+      70  ADC_Process
+       2  ADC_Right_Detector
+       2  ADC_Thumb
+     116  HEXtoBCD_l
+     116  HEXtoBCD_r
+     108  Init_ADC
+       2  _A_ADC10CTL0_L
+       2  _A_ADC10CTL1_L
+       2  _A_ADC10CTL2_L
+       2  _A_ADC10IE_L
+       2  _A_ADC10IV_L
+       2  _A_ADC10MCTL0_L
+       2  _A_ADC10MEM0_L
+       4  adc_char
+       2  adc_time
+       2  all_stop
+       2  black_line_detect
+       2  black_line_detected
+       2  black_value
+       2  calibrate_black
+       2  calibrate_white
+       2  count_adc_time
+       2  current_ADC_channel
+       8  l_adc_char
+       8  r_adc_char
+       2  threshold
+       2  try_back
+       2  try_forward
+       5  v_adc_char
+       2  white_value
+
+ 
+ 410 bytes in segment CODE
+  14 bytes in segment DATA16_AN
+  20 bytes in segment DATA16_I
+  20 bytes in segment DATA16_ID
+  37 bytes in segment DATA16_Z
+   2 bytes in segment INTVEC
+  88 bytes in segment ISR_CODE
+ 
+ 498 bytes of CODE  memory
+  20 bytes of CONST memory (+  2 bytes shared)
+  57 bytes of DATA  memory (+ 14 bytes shared)
+
+Errors: none
+Warnings: none

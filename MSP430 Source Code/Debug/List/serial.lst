@@ -1,0 +1,957 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  17:03:33
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\serial.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\serial.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\serial.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\serial.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\serial.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: serial.c
+      3          //  Description: This file handles serial communications initializations and interrupts
+      4          //
+      5          //  Zach Hannum
+      6          //  Feb 2016
+      7          //  Built with IAR Embedded Workbench Version: V7.3.YES.3987 (6.40.YES)
+      8          //
+      9          // Globals
+     10          // --------
+     11          // extern volatile unsigned int Time_Sequence;
+     12          // extern volatile char one_time;
+     13          // extern volatile unsigned int five_msec_count;
+     14          //------------------------------------------------------------------------------
+     15          
+     16          //------------------------------------------------------------------------------
+     17          
+     18          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x5c0
+   \   union <unnamed> _A_UCA0CTLW0_L
+   \                     _A_UCA0CTLW0_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5c6
+   \   union <unnamed> _A_UCA0BRW_L
+   \                     _A_UCA0BRW_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5c8
+   \   union <unnamed> _A_UCA0MCTLW_L
+   \                     _A_UCA0MCTLW_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5cc
+   \   union <unnamed> _A_UCA0RXBUF_L
+   \                     _A_UCA0RXBUF_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5ce
+   \   union <unnamed> _A_UCA0TXBUF_L
+   \                     _A_UCA0TXBUF_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5da
+   \   union <unnamed> _A_UCA0IE_L
+   \                     _A_UCA0IE_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5de
+   \   unsigned short volatile UCA0IV
+   \                     UCA0IV:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5e0
+   \   union <unnamed> _A_UCA1CTLW0_L
+   \                     _A_UCA1CTLW0_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5e6
+   \   union <unnamed> _A_UCA1BRW_L
+   \                     _A_UCA1BRW_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5e8
+   \   union <unnamed> _A_UCA1MCTLW_L
+   \                     _A_UCA1MCTLW_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5ec
+   \   union <unnamed> _A_UCA1RXBUF_L
+   \                     _A_UCA1RXBUF_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5ee
+   \   union <unnamed> _A_UCA1TXBUF_L
+   \                     _A_UCA1TXBUF_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5fa
+   \   union <unnamed> _A_UCA1IE_L
+   \                     _A_UCA1IE_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5fe
+   \   unsigned short volatile UCA1IV
+   \                     UCA1IV:
+   \   000000                DS8 2
+     19          #include  "functions.h"
+     20          #include  "macros.h"
+     21          
+     22          extern char *display_1;
+     23          extern char *display_2;
+     24          extern char *display_3;
+     25          extern char *display_4;
+     26          extern char display_line_1[ELEVEN];
+     27          extern char display_line_2[ELEVEN];
+     28          extern char display_line_3[ELEVEN];
+     29          extern char display_line_4[ELEVEN];
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     30          volatile char CPU_Char_Rx[SMALL_RING_SIZE];
+   \                     CPU_Char_Rx:
+   \   000000                DS8 32
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     31          volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+   \                     FRAM_Char_Rx:
+   \   000000                DS8 32
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     32          volatile unsigned int fram_rx_ring_wr;
+   \                     fram_rx_ring_wr:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     33          volatile unsigned int fram_tx_ring_wr;
+   \                     fram_tx_ring_wr:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     34          volatile unsigned int fram_tx_ring_rd;
+   \                     fram_tx_ring_rd:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     35          volatile unsigned int fram_rx_ring_rd;
+   \                     fram_rx_ring_rd:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     36          volatile unsigned int cpu_rx_ring_wr;
+   \                     cpu_rx_ring_wr:
+   \   000000                DS8 2
+     37          extern int BAUD_MODE;
+     38          extern volatile int increment;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     39          volatile int command_flag = CLR;
+   \                     command_flag:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     40          volatile int command_received = CLR;
+   \                     command_received:
+   \   000000                DS8 2
+     41          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     42          volatile int send_iot_command = CLR;
+   \                     send_iot_command:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     43          volatile int reset_iot = CLR;
+   \                     reset_iot:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     44          char DISASSOCIATION[EIGHT]= "+WIND:41";
+   \                     DISASSOCIATION:
+   \   000000                DS8 8
+   \   000008                REQUIRE `?<Initializer for DISASSOCIATION>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     45          char IPADD[EIGHT] = "WiFi Up:";
+   \                     IPADD:
+   \   000000                DS8 8
+   \   000008                REQUIRE `?<Initializer for IPADD>`
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     46          char IP[SIXTEEN];
+   \                     IP:
+   \   000000                DS8 16
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     47          volatile int ip_detected;
+   \                     ip_detected:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     48          volatile char command[MAX_COMMAND_LENGTH];
+   \                     command:
+   \   000000                DS8 100
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     49          volatile int command_sent;
+   \                     command_sent:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     50          char BSSLOST[BSSLOST_STRING_MAX] = "+WIND:30:";
+   \                     BSSLOST:
+   \   000000                DS8 9
+   \   000009                REQUIRE `?<Initializer for BSSLOST>`
+     51          
+     52          
+
+   \                                 In  segment CODE, align 2
+     53          void Init_Serial_UCA0(int MODE){
+   \                     Init_Serial_UCA0:
+     54            //===========================================================================
+     55            // Function name: Init_Serial_UCA0
+     56            //
+     57            // Description: Initializes Serial communications for USB
+     58            //
+     59            // Passed : int MODE
+     60            // Locals: no variables declared
+     61            // Returned: no values returned
+     62            // Globals: 
+     63          ////extern char *display_1;
+     64          ////extern char *display_2;
+     65          ////extern char *display_3;
+     66          ////extern char *display_4;
+     67          ////extern char display_line_1[ELEVEN];
+     68          ////extern char display_line_2[ELEVEN];
+     69          ////extern char display_line_3[ELEVEN];
+     70          ////extern char display_line_4[ELEVEN];
+     71          ////volatile char CPU_Char_Rx[SMALL_RING_SIZE];
+     72          ////volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+     73          ////volatile unsigned int fram_rx_ring_wr;
+     74          ////volatile unsigned int fram_tx_ring_wr;
+     75          ////volatile unsigned int fram_tx_ring_rd;
+     76          ////volatile unsigned int fram_rx_ring_rd;
+     77          ////volatile unsigned int cpu_rx_ring_wr;
+     78          ////extern int BAUD_MODE;
+     79          ////extern volatile int increment;
+     80          ////volatile int command_flag = CLR;
+     81          ////volatile int command_received = CLR;
+     82          ////
+     83          ////volatile int send_iot_command = CLR;
+     84          ////volatile int reset_iot = CLR;
+     85          ////char DISASSOCIATION[EIGHT]= "+WIND:41";
+     86          ////char IPADD[EIGHT] = "WiFi Up:";
+     87          ////char IP[SIXTEEN];
+     88          ////volatile int ip_detected;
+     89          ////volatile char command[MAX_COMMAND_LENGTH];
+     90          ////volatile int command_sent;
+     91            //
+     92            // Author:  Zach Hannum
+     93            // Date: Feb 2016
+     94            // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.YES)
+     95            //===========================================================================
+     96            int i;
+     97            for(i=CLR; i<SMALL_RING_SIZE; i++){
+   \   000000   0F43         MOV.W   #0x0, R15
+   \                     ??Init_Serial_UCA0_0:
+   \   000002   3F902000     CMP.W   #0x20, R15
+   \   000006   0434         JGE     ??Init_Serial_UCA0_1
+     98              FRAM_Char_Rx[i] = CLR_REG; // USB Rx Buffer
+   \   000008   CF43....     MOV.B   #0x0, FRAM_Char_Rx(R15)
+     99            }
+   \   00000C   1F53         ADD.W   #0x1, R15
+   \   00000E   F93F         JMP     ??Init_Serial_UCA0_0
+    100            fram_rx_ring_wr = BEGINNING;
+   \                     ??Init_Serial_UCA0_1:
+   \   000010   8243....     MOV.W   #0x0, &fram_rx_ring_wr
+    101            fram_rx_ring_rd = BEGINNING;
+   \   000014   8243....     MOV.W   #0x0, &fram_rx_ring_rd
+    102            
+    103            fram_tx_ring_wr = BEGINNING;
+   \   000018   8243....     MOV.W   #0x0, &fram_tx_ring_wr
+    104            fram_tx_ring_rd = BEGINNING;
+   \   00001C   8243....     MOV.W   #0x0, &fram_tx_ring_rd
+    105            // Configure UART CLR
+    106            UCA0CTLW0 = CLR; // Use word register
+   \   000020   8243C005     MOV.W   #0x0, &0x5c0
+    107            UCA0CTLW0 |= UCSSEL__SMCLK; // Set SMCLK as fBRCLK
+   \   000024   B2D08000C005 BIS.W   #0x80, &0x5c0
+    108            UCA0CTLW0 |= UCSWRST; // Set Software reset enable
+   \   00002A   92D3C005     BIS.W   #0x1, &0x5c0
+    109            switch (MODE){ 
+   \   00002E   0E4C         MOV.W   R12, R14
+   \   000030   0E83         SUB.W   #0x0, R14
+   \   000032   0324         JEQ     ??Init_Serial_UCA0_2
+   \   000034   1E83         SUB.W   #0x1, R14
+   \   000036   0824         JEQ     ??Init_Serial_UCA0_3
+   \   000038   0D3C         JMP     ??Init_Serial_UCA0_4
+    110            case LOW_BAUD:
+    111              UCA0BRW = LOW_BAUD_BRW;
+   \                     ??Init_Serial_UCA0_2:
+   \   00003A   B2403400C605 MOV.W   #0x34, &0x5c6
+    112              UCA0MCTLW = LOW_BAUD_MCTLW ;
+   \   000040   B2401149C805 MOV.W   #0x4911, &0x5c8
+    113              
+    114              break;
+   \   000046   0C3C         JMP     ??Init_Serial_UCA0_5
+    115              
+    116            case HIGH_BAUD:
+    117              UCA0BRW = HIGH_BAUD_BRW;
+   \                     ??Init_Serial_UCA0_3:
+   \   000048   A242C605     MOV.W   #0x4, &0x5c6
+    118              UCA0MCTLW = HIGH_BAUD_MCTLW;
+   \   00004C   B2405155C805 MOV.W   #0x5551, &0x5c8
+    119              
+    120              break;
+   \   000052   063C         JMP     ??Init_Serial_UCA0_5
+    121              
+    122            default:
+    123              UCA0BRW = LOW_BAUD_BRW;
+   \                     ??Init_Serial_UCA0_4:
+   \   000054   B2403400C605 MOV.W   #0x34, &0x5c6
+    124              UCA0MCTLW = LOW_BAUD_MCTLW;
+   \   00005A   B2401149C805 MOV.W   #0x4911, &0x5c8
+    125              
+    126              break;
+    127              
+    128            }
+    129            
+    130            UCA0CTL1 &= ~UCSWRST; // Release from reset
+   \                     ??Init_Serial_UCA0_5:
+   \   000060   D2C3C005     BIC.B   #0x1, &0x5c0
+    131            UCA0IE |= UCRXIE; // Enable RX interrupt
+   \   000064   92D3DA05     BIS.W   #0x1, &0x5da
+    132            
+    133          }
+   \   000068   1001         RETA
+   \   00006A                REQUIRE _A_UCA0CTLW0_L
+   \   00006A                REQUIRE _A_UCA0BRW_L
+   \   00006A                REQUIRE _A_UCA0MCTLW_L
+   \   00006A                REQUIRE _A_UCA0IE_L
+    134          
+
+   \                                 In  segment CODE, align 2
+    135          void Init_Serial_UCA1(int MODE){
+   \                     Init_Serial_UCA1:
+    136            //===========================================================================
+    137            // Function name: Init_Serial_UCA1
+    138            //
+    139            // Description: initializes IoT serial communications
+    140            //
+    141            // Passed : int MODE
+    142            // Locals: no variables declared
+    143          ////extern char *display_1;
+    144          ////extern char *display_2;
+    145          ////extern char *display_3;
+    146          ////extern char *display_4;
+    147          ////extern char display_line_1[ELEVEN];
+    148          ////extern char display_line_2[ELEVEN];
+    149          ////extern char display_line_3[ELEVEN];
+    150          ////extern char display_line_4[ELEVEN];
+    151          ////volatile char CPU_Char_Rx[SMALL_RING_SIZE];
+    152          ////volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+    153          ////volatile unsigned int fram_rx_ring_wr;
+    154          ////volatile unsigned int fram_tx_ring_wr;
+    155          ////volatile unsigned int fram_tx_ring_rd;
+    156          ////volatile unsigned int fram_rx_ring_rd;
+    157          ////volatile unsigned int cpu_rx_ring_wr;
+    158          ////extern int BAUD_MODE;
+    159          ////extern volatile int increment;
+    160          ////volatile int command_flag = CLR;
+    161          ////volatile int command_received = CLR;
+    162          ////
+    163          ////volatile int send_iot_command = CLR;
+    164          ////volatile int reset_iot = CLR;
+    165          ////char DISASSOCIATION[EIGHT]= "+WIND:41";
+    166          ////char IPADD[EIGHT] = "WiFi Up:";
+    167          ////char IP[SIXTEEN];
+    168          ////volatile int ip_detected;
+    169          ////volatile char command[MAX_COMMAND_LENGTH];
+    170          ////volatile int command_sent;
+    171            //
+    172            // Author:  Zach Hannum
+    173            // Date: Feb 2016
+    174            // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.YES)
+    175            //===========================================================================
+    176            int i;
+    177            for(i=CLR; i<SMALL_RING_SIZE; i++){
+   \   000000   0F43         MOV.W   #0x0, R15
+   \                     ??Init_Serial_UCA1_0:
+   \   000002   3F902000     CMP.W   #0x20, R15
+   \   000006   0434         JGE     ??Init_Serial_UCA1_1
+    178              FRAM_Char_Rx[i] = CLR_REG; // USB Rx Buffer
+   \   000008   CF43....     MOV.B   #0x0, FRAM_Char_Rx(R15)
+    179            }
+   \   00000C   1F53         ADD.W   #0x1, R15
+   \   00000E   F93F         JMP     ??Init_Serial_UCA1_0
+    180            fram_rx_ring_wr = BEGINNING;
+   \                     ??Init_Serial_UCA1_1:
+   \   000010   8243....     MOV.W   #0x0, &fram_rx_ring_wr
+    181            fram_rx_ring_rd = BEGINNING;
+   \   000014   8243....     MOV.W   #0x0, &fram_rx_ring_rd
+    182            
+    183            fram_tx_ring_wr = BEGINNING;
+   \   000018   8243....     MOV.W   #0x0, &fram_tx_ring_wr
+    184            fram_tx_ring_rd = BEGINNING;
+   \   00001C   8243....     MOV.W   #0x0, &fram_tx_ring_rd
+    185            // Configure UART CLR
+    186            UCA1CTLW0 = CLR; // Use word register
+   \   000020   8243E005     MOV.W   #0x0, &0x5e0
+    187            UCA1CTLW0 |= UCSSEL__SMCLK; // Set SMCLK as fBRCLK
+   \   000024   B2D08000E005 BIS.W   #0x80, &0x5e0
+    188            UCA1CTLW0 |= UCSWRST; // Set Software reset enable
+   \   00002A   92D3E005     BIS.W   #0x1, &0x5e0
+    189            switch (MODE){ 
+   \   00002E   0E4C         MOV.W   R12, R14
+   \   000030   0E83         SUB.W   #0x0, R14
+   \   000032   0324         JEQ     ??Init_Serial_UCA1_2
+   \   000034   1E83         SUB.W   #0x1, R14
+   \   000036   0824         JEQ     ??Init_Serial_UCA1_3
+   \   000038   0D3C         JMP     ??Init_Serial_UCA1_4
+    190            case LOW_BAUD:
+    191              UCA1BRW = LOW_BAUD_BRW;
+   \                     ??Init_Serial_UCA1_2:
+   \   00003A   B2403400E605 MOV.W   #0x34, &0x5e6
+    192              UCA1MCTLW = LOW_BAUD_MCTLW ;
+   \   000040   B2401149E805 MOV.W   #0x4911, &0x5e8
+    193              
+    194              break;
+   \   000046   0C3C         JMP     ??Init_Serial_UCA1_5
+    195              
+    196            case HIGH_BAUD:
+    197              UCA1BRW = HIGH_BAUD_BRW;
+   \                     ??Init_Serial_UCA1_3:
+   \   000048   A242E605     MOV.W   #0x4, &0x5e6
+    198              UCA1MCTLW = HIGH_BAUD_MCTLW;
+   \   00004C   B2405155E805 MOV.W   #0x5551, &0x5e8
+    199              
+    200              break;
+   \   000052   063C         JMP     ??Init_Serial_UCA1_5
+    201              
+    202            default:
+    203              UCA1BRW = LOW_BAUD_BRW;
+   \                     ??Init_Serial_UCA1_4:
+   \   000054   B2403400E605 MOV.W   #0x34, &0x5e6
+    204              UCA1MCTLW = LOW_BAUD_MCTLW;
+   \   00005A   B2401149E805 MOV.W   #0x4911, &0x5e8
+    205              
+    206              break;
+    207              
+    208            }
+    209            
+    210            UCA1CTL1 &= ~UCSWRST; // Release from reset
+   \                     ??Init_Serial_UCA1_5:
+   \   000060   D2C3E005     BIC.B   #0x1, &0x5e0
+    211            UCA1IE |= UCRXIE; // Enable RX interrupt
+   \   000064   92D3FA05     BIS.W   #0x1, &0x5fa
+    212            
+    213            
+    214          }
+   \   000068   1001         RETA
+   \   00006A                REQUIRE _A_UCA1CTLW0_L
+   \   00006A                REQUIRE _A_UCA1BRW_L
+   \   00006A                REQUIRE _A_UCA1MCTLW_L
+   \   00006A                REQUIRE _A_UCA1IE_L
+    215          
+    216          #pragma vector=USCI_A0_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+    217          __interrupt void USCI_A0_ISR(void){
+   \                     USCI_A0_ISR:
+   \   000000   3F15         PUSHM.W #0x4, R15
+    218            //===========================================================================
+    219            // Function name: USCI_A0_ISR
+    220            //
+    221            // Description: controls USB interrupts
+    222            //
+    223            // Passed : int MODE
+    224            // Locals: no variables declared
+    225          ////extern char *display_1;
+    226          ////extern char *display_2;
+    227          ////extern char *display_3;
+    228          ////extern char *display_4;
+    229          ////extern char display_line_1[ELEVEN];
+    230          ////extern char display_line_2[ELEVEN];
+    231          ////extern char display_line_3[ELEVEN];
+    232          ////extern char display_line_4[ELEVEN];
+    233          ////volatile char CPU_Char_Rx[SMALL_RING_SIZE];
+    234          ////volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+    235          ////volatile unsigned int fram_rx_ring_wr;
+    236          ////volatile unsigned int fram_tx_ring_wr;
+    237          ////volatile unsigned int fram_tx_ring_rd;
+    238          ////volatile unsigned int fram_rx_ring_rd;
+    239          ////volatile unsigned int cpu_rx_ring_wr;
+    240          ////extern int BAUD_MODE;
+    241          ////extern volatile int increment;
+    242          ////volatile int command_flag = CLR;
+    243          ////volatile int command_received = CLR;
+    244          ////
+    245          ////volatile int send_iot_command = CLR;
+    246          ////volatile int reset_iot = CLR;
+    247          ////char DISASSOCIATION[EIGHT]= "+WIND:41";
+    248          ////char IPADD[EIGHT] = "WiFi Up:";
+    249          ////char IP[SIXTEEN];
+    250          ////volatile int ip_detected;
+    251          ////volatile char command[MAX_COMMAND_LENGTH];
+    252          ////volatile int command_sent;
+    253            //
+    254            // Author:  Zach Hannum
+    255            // Date: Feb 2016
+    256            // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.YES)
+    257            //===========================================================================
+    258            unsigned int temp;
+    259            char tempchar;
+    260            unsigned int tempUCA = UCA0IV;
+   \   000002   1C42DE05     MOV.W   &0x5de, R12
+    261            switch(tempUCA){
+   \   000006   0E4C         MOV.W   R12, R14
+   \   000008   1E83         SUB.W   #0x1, R14
+   \   00000A   2424         JEQ     ??USCI_A0_ISR_3
+   \   00000C   1E83         SUB.W   #0x1, R14
+   \   00000E   0224         JEQ     ??USCI_A0_ISR_4
+   \   000010   2E83         SUB.W   #0x2, R14
+   \   000012   203C         JMP     ??USCI_A0_ISR_3
+    262            case YES: // Vector CLR - no interrupt
+    263              break;
+    264            case TWO: // Vector 2 - RXIFG
+    265              increment = YES;
+   \                     ??USCI_A0_ISR_4:
+   \   000014   9243....     MOV.W   #0x1, &increment
+    266              temp = fram_rx_ring_wr;
+   \   000018   1D42....     MOV.W   &fram_rx_ring_wr, R13
+    267              tempchar = UCA0RXBUF;
+   \   00001C   1E42CC05     MOV.W   &0x5cc, R14
+   \   000020   4F4E         MOV.B   R14, R15
+    268              
+    269              //Send back to terminal
+    270              UCA0TXBUF = tempchar;
+   \   000022   4F4F         MOV.B   R15, R15
+   \   000024   824FCE05     MOV.W   R15, &0x5ce
+    271              
+    272              //Send to IoT
+    273              UCA1TXBUF = tempchar;
+   \   000028   4F4F         MOV.B   R15, R15
+   \   00002A   824FEE05     MOV.W   R15, &0x5ee
+    274            
+    275              FRAM_Char_Rx[temp] = tempchar; // RX -> USB_Char_Rx character
+   \   00002E   CD4F....     MOV.B   R15, FRAM_Char_Rx(R13)
+    276              if (++fram_rx_ring_wr >= (SMALL_RING_SIZE)){
+   \   000032   1E42....     MOV.W   &fram_rx_ring_wr, R14
+   \   000036   1E53         ADD.W   #0x1, R14
+   \   000038   824E....     MOV.W   R14, &fram_rx_ring_wr
+   \   00003C   3E902000     CMP.W   #0x20, R14
+   \   000040   0228         JNC     ??USCI_A0_ISR_5
+    277                fram_rx_ring_wr = BEGINNING; // Circular buffer back to beginning
+   \   000042   8243....     MOV.W   #0x0, &fram_rx_ring_wr
+    278              }
+    279              if(tempchar == '\r'){
+   \                     ??USCI_A0_ISR_5:
+   \   000046   7F900D00     CMP.B   #0xd, R15
+   \   00004A   0420         JNE     ??USCI_A0_ISR_3
+    280                send_iot_command = YES;
+   \   00004C   9243....     MOV.W   #0x1, &send_iot_command
+    281                fram_rx_ring_wr = BEGINNING;
+   \   000050   8243....     MOV.W   #0x0, &fram_rx_ring_wr
+    282                
+    283              }
+    284              
+    285              break;
+    286            case FOUR: // Vector 4 – TXIFG
+    287              
+    288              break;
+    289            default: break;
+    290            }
+    291          }
+   \                     ??USCI_A0_ISR_3:
+   \   000054   3C17         POPM.W  #0x4, R15
+   \   000056   0013         RETI
+   \   000058                REQUIRE UCA0IV
+   \   000058                REQUIRE _A_UCA0RXBUF_L
+   \   000058                REQUIRE _A_UCA0TXBUF_L
+   \   000058                REQUIRE _A_UCA1TXBUF_L
+    292          //------------------------------------------------------------------------------
+    293          // Iot Interrupt
+    294          //------------------------------------------------------------------------------
+    295          #pragma vector=USCI_A1_VECTOR
+
+   \                                 In  segment ISR_CODE, align 2
+    296          __interrupt void USCI_A1_ISR(void){
+   \                     USCI_A1_ISR:
+   \   000000   9F15         PUSHM.W #0xa, R15
+    297              //===========================================================================
+    298            // Function name: USCI_A1_ISR
+    299            //
+    300            // Description: controls IoT interrupts
+    301            //
+    302            // Passed : int MODE
+    303            // Locals: no variables declared
+    304          ////extern char *display_1;
+    305          ////extern char *display_2;
+    306          ////extern char *display_3;
+    307          ////extern char *display_4;
+    308          ////extern char display_line_1[ELEVEN];
+    309          ////extern char display_line_2[ELEVEN];
+    310          ////extern char display_line_3[ELEVEN];
+    311          ////extern char display_line_4[ELEVEN];
+    312          ////volatile char CPU_Char_Rx[SMALL_RING_SIZE];
+    313          ////volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+    314          ////volatile unsigned int fram_rx_ring_wr;
+    315          ////volatile unsigned int fram_tx_ring_wr;
+    316          ////volatile unsigned int fram_tx_ring_rd;
+    317          ////volatile unsigned int fram_rx_ring_rd;
+    318          ////volatile unsigned int cpu_rx_ring_wr;
+    319          ////extern int BAUD_MODE;
+    320          ////extern volatile int increment;
+    321          ////volatile int command_flag = CLR;
+    322          ////volatile int command_received = CLR;
+    323          ////
+    324          ////volatile int send_iot_command = CLR;
+    325          ////volatile int reset_iot = CLR;
+    326          ////char DISASSOCIATION[EIGHT]= "+WIND:41";
+    327          ////char IPADD[EIGHT] = "WiFi Up:";
+    328          ////char IP[SIXTEEN];
+    329          ////volatile int ip_detected;
+    330          ////volatile char command[MAX_COMMAND_LENGTH];
+    331          ////volatile int command_sent;
+    332            //
+    333            // Author:  Zach Hannum
+    334            // Date: Feb 2016
+    335            // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.YES)
+    336            //===========================================================================
+    337            unsigned int temp;
+    338            unsigned int tempUCA = UCA1IV;
+   \   000002   1842FE05     MOV.W   &0x5fe, R8
+    339            char tempchar;
+    340            switch(tempUCA){
+   \   000006   0F48         MOV.W   R8, R15
+   \   000008   0F83         SUB.W   #0x0, R15
+   \   00000A   7F24         JEQ     ??USCI_A1_ISR_9
+   \   00000C   2F83         SUB.W   #0x2, R15
+   \   00000E   0224         JEQ     ??USCI_A1_ISR_10
+   \   000010   2F83         SUB.W   #0x2, R15
+   \   000012   7B3C         JMP     ??USCI_A1_ISR_9
+    341            case CLR: // Vector CLR - no interrupt
+    342              break;
+    343            case TWO: // Vector 2 - RXIFG
+    344              increment = YES;
+   \                     ??USCI_A1_ISR_10:
+   \   000014   9243....     MOV.W   #0x1, &increment
+    345              temp = cpu_rx_ring_wr;
+   \   000018   1B42....     MOV.W   &cpu_rx_ring_wr, R11
+    346              tempchar = UCA1RXBUF;
+   \   00001C   1E42EC05     MOV.W   &0x5ec, R14
+   \   000020   4A4E         MOV.B   R14, R10
+    347              UCA0TXBUF = tempchar;
+   \   000022   4A4A         MOV.B   R10, R10
+   \   000024   824ACE05     MOV.W   R10, &0x5ce
+    348              CPU_Char_Rx[temp] = tempchar; // RX -> USB_Char_Rx character
+   \   000028   CB4A....     MOV.B   R10, CPU_Char_Rx(R11)
+    349              if (++cpu_rx_ring_wr >= (SMALL_RING_SIZE)){
+   \   00002C   1F42....     MOV.W   &cpu_rx_ring_wr, R15
+   \   000030   1F53         ADD.W   #0x1, R15
+   \   000032   824F....     MOV.W   R15, &cpu_rx_ring_wr
+   \   000036   3F902000     CMP.W   #0x20, R15
+   \   00003A   0228         JNC     ??USCI_A1_ISR_11
+    350                cpu_rx_ring_wr = BEGINNING; // Circular buffer back to beginning
+   \   00003C   8243....     MOV.W   #0x0, &cpu_rx_ring_wr
+    351              }
+    352              
+    353              
+    354              //Detect Disassociation
+    355              
+    356              if(tempchar == '\r'){
+   \                     ??USCI_A1_ISR_11:
+   \   000040   7A900D00     CMP.B   #0xd, R10
+   \   000044   6220         JNE     ??USCI_A1_ISR_9
+    357                cpu_rx_ring_wr = BEGINNING;
+   \   000046   8243....     MOV.W   #0x0, &cpu_rx_ring_wr
+    358                for(int i = CLR; i < SMALL_RING_SIZE; i ++){
+   \   00004A   0943         MOV.W   #0x0, R9
+   \                     ??USCI_A1_ISR_0:
+   \   00004C   39902000     CMP.W   #0x20, R9
+   \   000050   0E34         JGE     ??USCI_A1_ISR_12
+    359                  int k = CLR;
+   \   000052   0643         MOV.W   #0x0, R6
+    360                  if(CPU_Char_Rx[i] == DISASSOCIATION[k]){
+   \   000054   D996........ CMP.B   DISASSOCIATION(R6), CPU_Char_Rx(R9)
+   \   00005A   0720         JNE     ??USCI_A1_ISR_13
+    361                    k++;
+   \   00005C   1653         ADD.W   #0x1, R6
+    362                    if(k == EIGHT){
+   \   00005E   3692         CMP.W   #0x8, R6
+   \   000060   0420         JNE     ??USCI_A1_ISR_13
+    363                      reset_iot = YES;
+   \   000062   9243....     MOV.W   #0x1, &reset_iot
+    364                      Wheels_Off();
+   \   000066   ........     CALLA   #Wheels_Off
+    365                    }
+    366                  }
+    367                }
+   \                     ??USCI_A1_ISR_13:
+   \   00006A   1953         ADD.W   #0x1, R9
+   \   00006C   EF3F         JMP     ??USCI_A1_ISR_0
+    368                
+    369                //Detect BSS Lost
+    370                for(int i = CLR; i <SMALL_RING_SIZE; i ++){
+   \                     ??USCI_A1_ISR_12:
+   \   00006E   0943         MOV.W   #0x0, R9
+   \                     ??USCI_A1_ISR_1:
+   \   000070   39902000     CMP.W   #0x20, R9
+   \   000074   0D34         JGE     ??USCI_A1_ISR_14
+    371                  int k = CLR;
+   \   000076   0643         MOV.W   #0x0, R6
+    372                  if(CPU_Char_Rx[i] == BSSLOST[k]){
+   \   000078   D996........ CMP.B   BSSLOST(R6), CPU_Char_Rx(R9)
+   \   00007E   0620         JNE     ??USCI_A1_ISR_15
+    373                    k++;
+   \   000080   1653         ADD.W   #0x1, R6
+    374                    if(k == BSSLOST_STRING_MAX){
+   \   000082   36900900     CMP.W   #0x9, R6
+   \   000086   0220         JNE     ??USCI_A1_ISR_15
+    375                      Wheels_Off();
+   \   000088   ........     CALLA   #Wheels_Off
+    376                    }
+    377                  }
+    378                }
+   \                     ??USCI_A1_ISR_15:
+   \   00008C   1953         ADD.W   #0x1, R9
+   \   00008E   F03F         JMP     ??USCI_A1_ISR_1
+    379                
+    380                //Detect IP Address
+    381                
+    382                int j = CLR;
+   \                     ??USCI_A1_ISR_14:
+   \   000090   0E43         MOV.W   #0x0, R14
+    383                int k = CLR;
+   \   000092   0D43         MOV.W   #0x0, R13
+    384                for(j = CLR; CPU_Char_Rx[j] != '\r'; j++){
+   \   000094   0E43         MOV.W   #0x0, R14
+   \                     ??USCI_A1_ISR_2:
+   \   000096   FE900D00.... CMP.B   #0xd, CPU_Char_Rx(R14)
+   \   00009C   0C24         JEQ     ??USCI_A1_ISR_16
+    385                  if(CPU_Char_Rx[j] == IPADD[k]){
+   \   00009E   DE9D........ CMP.B   IPADD(R13), CPU_Char_Rx(R14)
+   \   0000A4   0620         JNE     ??USCI_A1_ISR_17
+    386                    k++;
+   \   0000A6   1D53         ADD.W   #0x1, R13
+    387                    if(k == IP_HALF){
+   \   0000A8   3D92         CMP.W   #0x8, R13
+   \   0000AA   0320         JNE     ??USCI_A1_ISR_17
+    388                      ip_detected = YES;
+   \   0000AC   9243....     MOV.W   #0x1, &ip_detected
+    389                      break;
+   \   0000B0   023C         JMP     ??USCI_A1_ISR_16
+    390                    }
+    391                  }
+    392                }
+   \                     ??USCI_A1_ISR_17:
+   \   0000B2   1E53         ADD.W   #0x1, R14
+   \   0000B4   F03F         JMP     ??USCI_A1_ISR_2
+    393                
+    394                k = CLR;
+   \                     ??USCI_A1_ISR_16:
+   \   0000B6   0D43         MOV.W   #0x0, R13
+    395                if(ip_detected){
+   \   0000B8   8293....     CMP.W   #0x0, &ip_detected
+   \   0000BC   1324         JEQ     ??USCI_A1_ISR_18
+    396                  while(CPU_Char_Rx[++j] != '\r'){
+   \                     ??USCI_A1_ISR_3:
+   \   0000BE   1E53         ADD.W   #0x1, R14
+   \   0000C0   FE900D00.... CMP.B   #0xd, CPU_Char_Rx(R14)
+   \   0000C6   0524         JEQ     ??USCI_A1_ISR_4
+    397                    IP[k] = CPU_Char_Rx[j];
+   \   0000C8   DD4E........ MOV.B   CPU_Char_Rx(R14), IP(R13)
+    398                    k++;
+   \   0000CE   1D53         ADD.W   #0x1, R13
+   \   0000D0   F63F         JMP     ??USCI_A1_ISR_3
+    399                  }
+    400                  while(k++ < IP_LENGTH){   
+   \                     ??USCI_A1_ISR_4:
+   \   0000D2   0F4D         MOV.W   R13, R15
+   \   0000D4   0D4F         MOV.W   R15, R13
+   \   0000D6   1D53         ADD.W   #0x1, R13
+   \   0000D8   3F901000     CMP.W   #0x10, R15
+   \   0000DC   0334         JGE     ??USCI_A1_ISR_18
+    401                    IP[k] = '\0';
+   \   0000DE   CD43....     MOV.B   #0x0, IP(R13)
+   \   0000E2   F73F         JMP     ??USCI_A1_ISR_4
+    402                  }
+    403                }
+    404                
+    405                //Detect Commands issued from web
+    406                
+    407                j = YES;
+   \                     ??USCI_A1_ISR_18:
+   \   0000E4   1E43         MOV.W   #0x1, R14
+    408                k = CLR;
+   \   0000E6   0D43         MOV.W   #0x0, R13
+    409                if(CPU_Char_Rx[j] == '*'){ //Command sequence detected
+   \   0000E8   FE902A00.... CMP.B   #0x2a, CPU_Char_Rx(R14)
+   \   0000EE   0D20         JNE     ??USCI_A1_ISR_9
+    410                  while(CPU_Char_Rx[j++] != '\r'){
+   \                     ??USCI_A1_ISR_5:
+   \   0000F0   5F4E....     MOV.B   CPU_Char_Rx(R14), R15
+   \   0000F4   1E53         ADD.W   #0x1, R14
+   \   0000F6   7F900D00     CMP.B   #0xd, R15
+   \   0000FA   0524         JEQ     ??USCI_A1_ISR_19
+    411                    command[k++] = CPU_Char_Rx[j];
+   \   0000FC   DD4E........ MOV.B   CPU_Char_Rx(R14), command(R13)
+   \   000102   1D53         ADD.W   #0x1, R13
+   \   000104   F53F         JMP     ??USCI_A1_ISR_5
+    412                  }
+    413                  command_sent = YES;
+   \                     ??USCI_A1_ISR_19:
+   \   000106   9243....     MOV.W   #0x1, &command_sent
+    414                }
+    415              }
+    416              
+    417              
+    418              
+    419              break;
+    420            case FOUR: // Vector 4 – TXIFG
+    421              break;
+    422            default: break;
+    423              }
+    424            }
+   \                     ??USCI_A1_ISR_9:
+   \   00010A   9617         POPM.W  #0xa, R15
+   \   00010C   0013         RETI
+   \   00010E                REQUIRE UCA1IV
+   \   00010E                REQUIRE _A_UCA1RXBUF_L
+   \   00010E                REQUIRE _A_UCA0TXBUF_L
+
+   \                                 In  segment INTVEC, offset 0x56, root
+   \                     `??USCI_A1_ISR::??INTVEC 86`:
+   \   000056   ....         DC16    USCI_A1_ISR
+
+   \                                 In  segment INTVEC, offset 0x60, root
+   \                     `??USCI_A0_ISR::??INTVEC 96`:
+   \   000060   ....         DC16    USCI_A0_ISR
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for DISASSOCIATION>`:
+   \   000000   2B57494E443A DC8 2BH, 57H, 49H, 4EH, 44H, 3AH, 34H, 31H
+   \            3431        
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for IPADD>`:
+   \   000000   576946692055 DC8 57H, 69H, 46H, 69H, 20H, 55H, 70H, 3AH
+   \            703A        
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for BSSLOST>`:
+   \   000000   2B57494E443A DC8 2BH, 57H, 49H, 4EH, 44H, 3AH, 33H, 30H
+   \            3330        
+   \   000008   3A           DC8 3AH
+    425                   //------------------------------------------------------------------------------
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      4   Init_Serial_UCA0
+      4   Init_Serial_UCA1
+     12   USCI_A0_ISR
+     24   USCI_A1_ISR
+       24   -> Wheels_Off
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       9  ?<Initializer for BSSLOST>
+       8  ?<Initializer for DISASSOCIATION>
+       8  ?<Initializer for IPADD>
+       9  BSSLOST
+      32  CPU_Char_Rx
+       8  DISASSOCIATION
+      32  FRAM_Char_Rx
+      16  IP
+       8  IPADD
+     106  Init_Serial_UCA0
+     106  Init_Serial_UCA1
+       2  UCA0IV
+       2  UCA1IV
+      88  USCI_A0_ISR
+       2  USCI_A0_ISR::??INTVEC 96
+     270  USCI_A1_ISR
+       2  USCI_A1_ISR::??INTVEC 86
+       2  _A_UCA0BRW_L
+       2  _A_UCA0CTLW0_L
+       2  _A_UCA0IE_L
+       2  _A_UCA0MCTLW_L
+       2  _A_UCA0RXBUF_L
+       2  _A_UCA0TXBUF_L
+       2  _A_UCA1BRW_L
+       2  _A_UCA1CTLW0_L
+       2  _A_UCA1IE_L
+       2  _A_UCA1MCTLW_L
+       2  _A_UCA1RXBUF_L
+       2  _A_UCA1TXBUF_L
+     100  command
+       2  command_flag
+       2  command_received
+       2  command_sent
+       2  cpu_rx_ring_wr
+       2  fram_rx_ring_rd
+       2  fram_rx_ring_wr
+       2  fram_tx_ring_rd
+       2  fram_tx_ring_wr
+       2  ip_detected
+       2  reset_iot
+       2  send_iot_command
+
+ 
+ 212 bytes in segment CODE
+  28 bytes in segment DATA16_AN
+  25 bytes in segment DATA16_I
+  25 bytes in segment DATA16_ID
+ 202 bytes in segment DATA16_Z
+   4 bytes in segment INTVEC
+ 358 bytes in segment ISR_CODE
+ 
+ 570 bytes of CODE  memory
+  25 bytes of CONST memory (+  4 bytes shared)
+ 227 bytes of DATA  memory (+ 28 bytes shared)
+
+Errors: none
+Warnings: none

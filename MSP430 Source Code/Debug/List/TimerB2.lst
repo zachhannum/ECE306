@@ -1,0 +1,177 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  17:03:33
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\TimerB2.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\TimerB2.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\TimerB2.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\TimerB2.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\TimerB2.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: TimerA0.c
+      3          //  Description: This file sets up TimerA0
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //------------------------------------------------------------------------------
+     10          
+     11          //------------------------------------------------------------------------------
+     12          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x440
+   \   unsigned short volatile TB2CTL
+   \                     TB2CTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x444
+   \   unsigned short volatile TB2CCTL1
+   \                     TB2CCTL1:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x446
+   \   unsigned short volatile TB2CCTL2
+   \                     TB2CCTL2:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x452
+   \   unsigned short volatile TB2CCR0
+   \                     TB2CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x454
+   \   unsigned short volatile TB2CCR1
+   \                     TB2CCR1:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x456
+   \   unsigned short volatile TB2CCR2
+   \                     TB2CCR2:
+   \   000000                DS8 2
+     13          #include  "functions.h"
+     14          #include  "macros.h"
+     15          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     16          volatile unsigned int leftForwardRate;
+   \                     leftForwardRate:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     17          volatile unsigned int leftReverseRate;
+   \                     leftReverseRate:
+   \   000000                DS8 2
+     18          
+
+   \                                 In  segment CODE, align 2
+     19          void Init_Timer_B2(void){
+   \                     Init_Timer_B2:
+     20          //----------------------------------------------------------------------------
+     21          // 
+     22          //===========================================================================
+     23          // Function name: Init_Timer_B2
+     24          //
+     25          // Description: Initializes timer B2 for use with left wheel forward and reverse pwm
+     26          //
+     27          // Passed : no variables passed
+     28          // Locals: no variables declared
+     29          // Returned: no values returned
+     30          // Globals: 
+     31          //
+     32          // Author:  Zach Hannum
+     33          // Date: Feb 2016
+     34          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     35          //===========================================================================
+     36            
+     37            TB2CTL = TBSSEL__SMCLK; //SMCLK
+   \   000000   B24000024004 MOV.W   #0x200, &0x440
+     38            TB2CTL |= MC_1;         //UP MODE
+   \   000006   B2D010004004 BIS.W   #0x10, &0x440
+     39            TB2CTL |= TBCLR;        //CLEAR TAR
+   \   00000C   A2D24004     BIS.W   #0x4, &0x440
+     40            
+     41            leftForwardRate = OFF;
+   \   000010   8243....     MOV.W   #0x0, &leftForwardRate
+     42            leftReverseRate = OFF;
+   \   000014   8243....     MOV.W   #0x0, &leftReverseRate
+     43            
+     44            TB2CCR0 = WHEEL_PERIOD;
+   \   000018   B240E8035204 MOV.W   #0x3e8, &0x452
+     45            TB2CCTL1 = OUTMOD_7;
+   \   00001E   B240E0004404 MOV.W   #0xe0, &0x444
+     46            TB2CCR1 = leftForwardRate;
+   \   000024   9242....5404 MOV.W   &leftForwardRate, &0x454
+     47            TB2CCTL2 = OUTMOD_7;
+   \   00002A   B240E0004604 MOV.W   #0xe0, &0x446
+     48            TB2CCR2 = leftReverseRate;
+   \   000030   9242....5604 MOV.W   &leftReverseRate, &0x456
+     49            
+     50            
+     51            
+     52          }
+   \   000036   1001         RETA
+   \   000038                REQUIRE TB2CTL
+   \   000038                REQUIRE TB2CCR0
+   \   000038                REQUIRE TB2CCTL1
+   \   000038                REQUIRE TB2CCR1
+   \   000038                REQUIRE TB2CCTL2
+   \   000038                REQUIRE TB2CCR2
+     53          
+     54          
+     55          
+     56          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      4   Init_Timer_B2
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      56  Init_Timer_B2
+       2  TB2CCR0
+       2  TB2CCR1
+       2  TB2CCR2
+       2  TB2CCTL1
+       2  TB2CCTL2
+       2  TB2CTL
+       2  leftForwardRate
+       2  leftReverseRate
+
+ 
+ 56 bytes in segment CODE
+ 12 bytes in segment DATA16_AN
+  4 bytes in segment DATA16_Z
+ 
+ 56 bytes of CODE memory
+  4 bytes of DATA memory (+ 12 bytes shared)
+
+Errors: none
+Warnings: none

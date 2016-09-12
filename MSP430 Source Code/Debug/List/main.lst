@@ -1,0 +1,1380 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           21/Apr/2016  16:23:02
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\main.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\main.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\main.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\main.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\main.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: main.c
+      3          //  Description: This file contains the Main Routine - "While" Operating System
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //
+     10          //
+     11          // Globals 
+     12          //---------
+     13          // volatile unsigned char control_state[CNTL_STATE_INDEX]; //
+     14          // volatile unsigned int Time_Sequence;
+     15          // char led_smclk;
+     16          // volatile char one_time;
+     17          // volatile unsigned int five_msec_count;
+     18          // extern char display_line_1[ELEVEN];             
+     19          // extern char display_line_2[ELEVEN];            
+     20          // extern char display_line_3[ELEVEN];             
+     21          // extern char display_line_4[ELEVEN];             
+     22          // extern char *display_1;                     // Line 1 of LCD Display 
+     23          // extern char *display_2;                     // Line 2 of LCD Display  
+     24          // extern char *display_3;                     // Line 3 of LCD Display  
+     25          // extern char *display_4;                     // Line INT_JUMP of LCD Display 
+     26          // char posL1;
+     27          // char posL2;
+     28          // char posL3;
+     29          // char posL4;
+     30          // char size_count;
+     31          // char big;
+     32          //------------------------------------------------------------------------------
+     33          
+     34          //------------------------------------------------------------------------------
+     35          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x202
+   \   union <unnamed> _A_PAOUT_L
+   \                     _A_PAOUT_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x322
+   \   union <unnamed> _A_PJOUT_L
+   \                     _A_PJOUT_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x392
+   \   unsigned short volatile TA1CCR0
+   \                     TA1CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5ee
+   \   union <unnamed> _A_UCA1TXBUF_L
+   \                     _A_UCA1TXBUF_L:
+   \   000000                DS8 2
+     36          #include  "functions.h"
+     37          #include  "macros.h"
+     38          #include "stdio.h"
+     39          
+     40          
+     41          // Global Variables
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     42          volatile unsigned char control_state[CNTL_STATE_INDEX];
+   \                     control_state:
+   \   000000                DS8 3
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     43          volatile unsigned int Time_Sequence;
+   \                     Time_Sequence:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     44          char led_smclk;
+   \                     led_smclk:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     45          volatile char one_time;
+   \                     one_time:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     46          volatile unsigned int five_msec_count;
+   \                     five_msec_count:
+   \   000000                DS8 2
+     47          extern char display_line_1[ELEVEN];
+     48          extern char display_line_2[ELEVEN];
+     49          extern char display_line_3[ELEVEN];
+     50          extern char display_line_4[ELEVEN];
+     51          extern char *display_1;
+     52          extern char *display_2;
+     53          extern char *display_3;
+     54          extern char *display_4;
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     55          char posL1;
+   \                     posL1:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     56          char posL2;
+   \                     posL2:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     57          char posL3;
+   \                     posL3:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     58          char posL4;
+   \                     posL4:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     59          char size_count;
+   \                     size_count:
+   \   000000                DS8 1
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     60          char big;
+   \                     big:
+   \   000000                DS8 1
+     61          extern int mode;
+     62          extern int count;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     63          int BAUD_MODE = LOW_BAUD;
+   \                     BAUD_MODE:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     64          volatile int increment;
+   \                     increment:
+   \   000000                DS8 2
+     65          extern volatile int command_received;
+     66          
+     67          extern volatile int send_iot_command;
+     68          extern volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     69          char RESET_STRING[NINE] = "AT+CFUN=1";
+   \                     RESET_STRING:
+   \   000000                DS8 9
+   \   000009                REQUIRE `?<Initializer for RESET_STRING>`
+     70          extern volatile int reset_iot;
+     71          extern char IP[IP_LENGTH];
+     72          extern volatile int ip_detected;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     73          int command_time;
+   \                     command_time:
+   \   000000                DS8 2
+     74          extern volatile char command[ONEMSEC];
+     75          extern volatile int command_sent;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     76          int j = CLR;
+   \                     j:
+   \   000000                DS8 2
+     77          extern volatile int black_line_detect;
+     78          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     79          int rightForwardDuty;
+   \                     rightForwardDuty:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     80          int rightReverseDuty;
+   \                     rightReverseDuty:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     81          int leftForwardDuty;
+   \                     leftForwardDuty:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     82          int leftReverseDuty;
+   \                     leftReverseDuty:
+   \   000000                DS8 2
+     83          
+     84          extern volatile unsigned long int time;
+     85          extern volatile int countTime;
+     86          extern volatile int minuteTime;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     87          volatile int controls_enabled = CLR;
+   \                     controls_enabled:
+   \   000000                DS8 2
+     88          
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     89          volatile int display_adc = CLR;
+   \                     display_adc:
+   \   000000                DS8 2
+     90          extern volatile int calibrate_white;
+     91          extern volatile int calibrate_black;
+     92          
+     93          extern volatile unsigned int ADC_Right_Detector;
+     94          extern volatile unsigned int ADC_Left_Detector;
+     95          
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     96          char count_array[10];
+   \                     count_array:
+   \   000000                DS8 10
+     97          
+
+   \                                 In  segment CODE, align 2
+     98          void main(void){
+   \                     main:
+   \   000000   B1001200     SUBA    #0x12, SP
+     99            //------------------------------------------------------------------------------
+    100            // Main Program
+    101            // This is the main routine for the program. Execution of code starts here.
+    102            // The operating system is Back Ground Fore Ground.
+    103            // 
+    104            // Globals 
+    105            //---------
+    106            // volatile unsigned char control_state[CNTL_STATE_INDEX]; //
+    107            // volatile unsigned int Time_Sequence;
+    108            // char led_smclk;
+    109            // volatile char one_time;
+    110            // volatile unsigned int five_msec_count;
+    111            // extern char display_line_1[ELEVEN];             
+    112            // extern char display_line_2[ELEVEN];            
+    113            // extern char display_line_3[ELEVEN];             
+    114            // extern char display_line_4[ELEVEN];             
+    115            // extern char *display_1;                     // Line 1 of LCD Display 
+    116            // extern char *display_2;                     // Line 2 of LCD Display  
+    117            // extern char *display_3;                     // Line 3 of LCD Display  
+    118            // extern char *display_4;                     // Line INT_JUMP of LCD Display 
+    119            // char posL1;
+    120            // char posL2;
+    121            // char posL3;
+    122            // char posL4;
+    123            // char size_count;
+    124            // char big;
+    125            //------------------------------------------------------------------------------
+    126            Init_Ports();                             // Initialize Ports
+   \   000004   ........     CALLA   #Init_Ports
+    127            Init_Clocks();                            // Initialize Clock System 
+   \   000008   ........     CALLA   #Init_Clocks
+    128            Init_Conditions();
+   \   00000C   ........     CALLA   #Init_Conditions
+    129            Time_Sequence = CLR;                        // 
+   \   000010   8243....     MOV.W   #0x0, &Time_Sequence
+    130            Init_Timers();                            // Initialize Timers
+   \   000014   ........     CALLA   #Init_Timers
+    131            Init_LCD();                               // Initialize LCD
+   \   000018   ........     CALLA   #Init_LCD
+    132            Init_ADC();
+   \   00001C   ........     CALLA   #Init_ADC
+    133            Init_Serial_UCA0(LOW_BAUD);
+   \   000020   0C43         MOV.W   #0x0, R12
+   \   000022   ........     CALLA   #Init_Serial_UCA0
+    134            Init_Serial_UCA1(HIGH_BAUD);
+   \   000026   1C43         MOV.W   #0x1, R12
+   \   000028   ........     CALLA   #Init_Serial_UCA1
+    135            mode = DEFAULT;
+   \   00002C   B2400300.... MOV.W   #0x3, &mode
+    136          
+    137            
+    138            
+    139            
+    140            display_1 = "ECE 306";
+   \   000032   B240........ MOV.W   #`?<Constant "ECE 306">`, &display_1
+    141            posL1 = CLR;
+   \   000038   C243....     MOV.B   #0x0, &posL1
+    142            display_2 = "Project 8";
+   \   00003C   B240........ MOV.W   #`?<Constant "Project 8">`, &display_2
+    143            posL2 = CLR;
+   \   000042   C243....     MOV.B   #0x0, &posL2
+    144            display_3 = "";
+   \   000046   B240........ MOV.W   #`?<Constant "">`, &display_3
+    145            posL3 = CLR;
+   \   00004C   C243....     MOV.B   #0x0, &posL3
+    146            display_4 = "ZHANNUM";
+   \   000050   B240........ MOV.W   #`?<Constant "ZHANNUM">`, &display_4
+    147            posL4 = CLR;
+   \   000056   C243....     MOV.B   #0x0, &posL4
+    148            Display_Process();
+   \   00005A   ........     CALLA   #Display_Process
+    149            sleep(ONE_SEC);
+   \   00005E   3C40E803     MOV.W   #0x3e8, R12
+   \   000062   ........     CALLA   #sleep
+    150            PJOUT |= IOT_RESET;
+   \   000066   B2D22203     BIS.W   #0x8, &0x322
+    151            display_1 = "     ";
+   \   00006A   B240........ MOV.W   #`?<Constant "     ">`, &display_1
+    152            display_2 = "    ";
+   \   000070   B240........ MOV.W   #`?<Constant "    ">`, &display_2
+    153            posL4 = CLR;
+   \   000076   C243....     MOV.B   #0x0, &posL4
+    154            display_4 = " ";
+   \   00007A   B240........ MOV.W   #`?<Constant " ">`, &display_4
+    155            
+    156            //P1OUT |= IR_LED;
+    157            //------------------------------------------------------------------------------
+    158            // Begining of the "While" Operating System
+    159            //------------------------------------------------------------------------------
+    160            while(ALWAYS) {  
+    161              Switches_Process();
+   \                     ??main_6:
+   \   000080   ........     CALLA   #Switches_Process
+    162              
+    163              if(reset_iot){
+   \   000084   8293....     CMP.W   #0x0, &reset_iot
+   \   000088   2724         JEQ     ??main_12
+    164                for(int i = CLR; i < RESET_STRING_MAX; i++){
+   \   00008A   0A43         MOV.W   #0x0, R10
+   \                     ??main_0:
+   \   00008C   3A900900     CMP.W   #0x9, R10
+   \   000090   0E34         JGE     ??main_13
+    165                  display_4 = "resetting...";
+   \   000092   B240........ MOV.W   #`?<Constant "resetting...">`, &display_4
+    166                  UCA1TXBUF = RESET_STRING[i];
+   \   000098   5F4A....     MOV.B   RESET_STRING(R10), R15
+   \   00009C   4F4F         MOV.B   R15, R15
+   \   00009E   824FEE05     MOV.W   R15, &0x5ee
+    167                  sleep(TENTHMSEC);
+   \   0000A2   3C400A00     MOV.W   #0xa, R12
+   \   0000A6   ........     CALLA   #sleep
+    168                }
+   \   0000AA   1A53         ADD.W   #0x1, R10
+   \   0000AC   EF3F         JMP     ??main_0
+    169                UCA1TXBUF = '\r';
+   \                     ??main_13:
+   \   0000AE   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    170                sleep(ONEMSEC);
+   \   0000B4   3C406400     MOV.W   #0x64, R12
+   \   0000B8   ........     CALLA   #sleep
+    171                PJOUT = ~IOT_RESET;
+   \   0000BC   B240F7FF2203 MOV.W   #0xfff7, &0x322
+    172                sleep(ONEMSEC);
+   \   0000C2   3C406400     MOV.W   #0x64, R12
+   \   0000C6   ........     CALLA   #sleep
+    173                PJOUT |= IOT_RESET;
+   \   0000CA   B2D22203     BIS.W   #0x8, &0x322
+    174                display_4 = " ";
+   \   0000CE   B240........ MOV.W   #`?<Constant " ">`, &display_4
+    175                reset_iot = CLR;
+   \   0000D4   8243....     MOV.W   #0x0, &reset_iot
+    176                
+    177              }
+    178              
+    179              if(ip_detected){
+   \                     ??main_12:
+   \   0000D8   8293....     CMP.W   #0x0, &ip_detected
+   \   0000DC   2C24         JEQ     ??main_14
+    180                char ip_line_1 [DISPLAY_SIZE];
+    181                char ip_line_2 [DISPLAY_SIZE];
+    182                for ( int i = CLR; i < IP_LINE_MAX; i++){
+   \   0000DE   0F43         MOV.W   #0x0, R15
+   \                     ??main_1:
+   \   0000E0   3F92         CMP.W   #0x8, R15
+   \   0000E2   0734         JGE     ??main_15
+    183                  ip_line_1[i] = IP[i];
+   \   0000E4   0E4F         MOV.W   R15, R14
+   \   0000E6   0E51         ADD.W   SP, R14
+   \   0000E8   DE4F....0900 MOV.B   IP(R15), 0x9(R14)
+    184                }
+   \   0000EE   1F53         ADD.W   #0x1, R15
+   \   0000F0   F73F         JMP     ??main_1
+    185                
+    186                for( int i = CLR; i < IP_LINE_MAX; i ++){
+   \                     ??main_15:
+   \   0000F2   0F43         MOV.W   #0x0, R15
+   \                     ??main_2:
+   \   0000F4   3F92         CMP.W   #0x8, R15
+   \   0000F6   0734         JGE     ??main_16
+    187                  ip_line_2[i] = IP[i+IP_LINE_MAX];
+   \   0000F8   0E4F         MOV.W   R15, R14
+   \   0000FA   0E51         ADD.W   SP, R14
+   \   0000FC   DE4F....0000 MOV.B   IP + 8(R15), 0(R14)
+    188                }
+   \   000102   1F53         ADD.W   #0x1, R15
+   \   000104   F73F         JMP     ??main_2
+    189                ip_line_1[IP_LINE_MAX] = '\0';
+   \                     ??main_16:
+   \   000106   C1431100     MOV.B   #0x0, 0x11(SP)
+    190                ip_line_2[IP_LINE_MAX] = '\0';
+   \   00010A   C1430800     MOV.B   #0x0, 0x8(SP)
+    191                display_1 = ip_line_1;
+   \   00010E   0F41         MOV.W   SP, R15
+   \   000110   3F500900     ADD.W   #0x9, R15
+   \   000114   824F....     MOV.W   R15, &display_1
+    192                display_2 = ip_line_2;
+   \   000118   0F41         MOV.W   SP, R15
+   \   00011A   824F....     MOV.W   R15, &display_2
+    193                ip_detected = CLR;
+   \   00011E   8243....     MOV.W   #0x0, &ip_detected
+    194                
+    195                sleep(2000);
+   \   000122   3C40D007     MOV.W   #0x7d0, R12
+   \   000126   ........     CALLA   #sleep
+    196                
+    197                display_1 = "";
+   \   00012A   B240........ MOV.W   #`?<Constant "">`, &display_1
+    198                display_2 = "";
+   \   000130   B240........ MOV.W   #`?<Constant "">`, &display_2
+    199                
+    200                
+    201              }
+    202              
+    203              if(command_sent){
+   \                     ??main_14:
+   \   000136   8293....     CMP.W   #0x0, &command_sent
+   \   00013A   2B25         JEQ     ??main_17
+    204                
+    205                j = CLR;
+   \   00013C   8243....     MOV.W   #0x0, &j
+    206                while(command[j] != '\r'){
+   \                     ??main_3:
+   \   000140   1F42....     MOV.W   &j, R15
+   \   000144   FF900D00.... CMP.B   #0xd, command(R15)
+   \   00014A   2325         JEQ     ??main_17
+    207                  switch (command[j]){
+   \   00014C   1F42....     MOV.W   &j, R15
+   \   000150   5E4F....     MOV.B   command(R15), R14
+   \   000154   7E804100     SUB.B   #0x41, R14
+   \   000158   E124         JEQ     ??main_18
+   \   00015A   5E83         SUB.B   #0x1, R14
+   \   00015C   E824         JEQ     ??main_19
+   \   00015E   5E83         SUB.B   #0x1, R14
+   \   000160   8524         JEQ     ??main_20
+   \   000162   6E83         SUB.B   #0x2, R14
+   \   000164   BC24         JEQ     ??main_21
+   \   000166   5E83         SUB.B   #0x1, R14
+   \   000168   A924         JEQ     ??main_22
+   \   00016A   7E800600     SUB.B   #0x6, R14
+   \   00016E   4324         JEQ     ??main_23
+   \   000170   7E800600     SUB.B   #0x6, R14
+   \   000174   0524         JEQ     ??main_24
+   \   000176   5E83         SUB.B   #0x1, R14
+   \   000178   8824         JEQ     ??main_25
+   \   00017A   6E82         SUB.B   #0x4, R14
+   \   00017C   F124         JEQ     ??main_26
+   \   00017E   E03F         JMP     ??main_3
+    208                  case 'R':
+    209                    if(controls_enabled){
+   \                     ??main_24:
+   \   000180   8293....     CMP.W   #0x0, &controls_enabled
+   \   000184   2F24         JEQ     ??main_27
+    210                      countTime = YES;
+   \   000186   9243....     MOV.W   #0x1, &countTime
+    211                      toInt();
+   \   00018A   ........     CALLA   #toInt
+    212                      rightForwardDuty = command_time;
+   \   00018E   9242........ MOV.W   &command_time, &rightForwardDuty
+    213                      if(rightForwardDuty > 0){
+   \   000194   9293....     CMP.W   #0x1, &rightForwardDuty
+   \   000198   0A38         JL      ??main_28
+    214                        if(rightForwardDuty > 900)
+   \   00019A   B2908503.... CMP.W   #0x385, &rightForwardDuty
+   \   0001A0   0238         JL      ??main_29
+    215                          rightForwardDuty = 0;
+   \   0001A2   8243....     MOV.W   #0x0, &rightForwardDuty
+    216                        Right_Wheel_Forward_On(rightForwardDuty);
+   \                     ??main_29:
+   \   0001A6   1C42....     MOV.W   &rightForwardDuty, R12
+   \   0001AA   ........     CALLA   #Right_Wheel_Forward_On
+    217                      }
+    218                      toInt();
+   \                     ??main_28:
+   \   0001AE   ........     CALLA   #toInt
+    219                      rightReverseDuty = command_time;
+   \   0001B2   9242........ MOV.W   &command_time, &rightReverseDuty
+    220                      if(rightReverseDuty > 0){
+   \   0001B8   9293....     CMP.W   #0x1, &rightReverseDuty
+   \   0001BC   0A38         JL      ??main_30
+    221                        if(rightReverseDuty > 900)
+   \   0001BE   B2908503.... CMP.W   #0x385, &rightReverseDuty
+   \   0001C4   0238         JL      ??main_31
+    222                          rightReverseDuty = 0;
+   \   0001C6   8243....     MOV.W   #0x0, &rightReverseDuty
+    223                        Right_Wheel_Reverse_On(rightReverseDuty);
+   \                     ??main_31:
+   \   0001CA   1C42....     MOV.W   &rightReverseDuty, R12
+   \   0001CE   ........     CALLA   #Right_Wheel_Reverse_On
+    224                      }
+    225                      if((rightForwardDuty == 0) && (rightReverseDuty == 0))
+   \                     ??main_30:
+   \   0001D2   8293....     CMP.W   #0x0, &rightForwardDuty
+   \   0001D6   0C20         JNE     ??main_32
+   \   0001D8   8293....     CMP.W   #0x0, &rightReverseDuty
+   \   0001DC   0920         JNE     ??main_32
+    226                        Right_Wheel_Off();
+   \   0001DE   ........     CALLA   #Right_Wheel_Off
+   \   0001E2   063C         JMP     ??main_32
+    227                    }
+    228                    else{
+    229                      toInt();
+   \                     ??main_27:
+   \   0001E4   ........     CALLA   #toInt
+    230                      toInt();
+   \   0001E8   ........     CALLA   #toInt
+    231                      Right_Wheel_Off();
+   \   0001EC   ........     CALLA   #Right_Wheel_Off
+    232                    }
+    233                    command_sent = CLR;
+   \                     ??main_32:
+   \   0001F0   8243....     MOV.W   #0x0, &command_sent
+    234                    break;
+   \   0001F4   A53F         JMP     ??main_3
+    235                  case 'L':
+    236                    if(controls_enabled){
+   \                     ??main_23:
+   \   0001F6   8293....     CMP.W   #0x0, &controls_enabled
+   \   0001FA   2F24         JEQ     ??main_33
+    237                      countTime = YES;
+   \   0001FC   9243....     MOV.W   #0x1, &countTime
+    238                      toInt();
+   \   000200   ........     CALLA   #toInt
+    239                      leftForwardDuty = command_time;
+   \   000204   9242........ MOV.W   &command_time, &leftForwardDuty
+    240                      if(leftForwardDuty > 0){
+   \   00020A   9293....     CMP.W   #0x1, &leftForwardDuty
+   \   00020E   0A38         JL      ??main_34
+    241                        if(leftForwardDuty > 900)
+   \   000210   B2908503.... CMP.W   #0x385, &leftForwardDuty
+   \   000216   0238         JL      ??main_35
+    242                          leftForwardDuty = 0;
+   \   000218   8243....     MOV.W   #0x0, &leftForwardDuty
+    243                        Left_Wheel_Forward_On(leftForwardDuty);
+   \                     ??main_35:
+   \   00021C   1C42....     MOV.W   &leftForwardDuty, R12
+   \   000220   ........     CALLA   #Left_Wheel_Forward_On
+    244                      }
+    245                      
+    246                      toInt();
+   \                     ??main_34:
+   \   000224   ........     CALLA   #toInt
+    247                      leftReverseDuty = command_time;
+   \   000228   9242........ MOV.W   &command_time, &leftReverseDuty
+    248                      if(leftReverseDuty > 0){
+   \   00022E   9293....     CMP.W   #0x1, &leftReverseDuty
+   \   000232   0A38         JL      ??main_36
+    249                        if(leftReverseDuty > 900)
+   \   000234   B2908503.... CMP.W   #0x385, &leftReverseDuty
+   \   00023A   0238         JL      ??main_37
+    250                          leftReverseDuty = 0;
+   \   00023C   8243....     MOV.W   #0x0, &leftReverseDuty
+    251                        Left_Wheel_Reverse_On(leftReverseDuty);
+   \                     ??main_37:
+   \   000240   1C42....     MOV.W   &leftReverseDuty, R12
+   \   000244   ........     CALLA   #Left_Wheel_Reverse_On
+    252                      }
+    253                      if((leftForwardDuty == 0) && (leftReverseDuty == 0))
+   \                     ??main_36:
+   \   000248   8293....     CMP.W   #0x0, &leftForwardDuty
+   \   00024C   0C20         JNE     ??main_38
+   \   00024E   8293....     CMP.W   #0x0, &leftReverseDuty
+   \   000252   0920         JNE     ??main_38
+    254                        Left_Wheel_Off();
+   \   000254   ........     CALLA   #Left_Wheel_Off
+   \   000258   063C         JMP     ??main_38
+    255                    }
+    256                    else{
+    257                      toInt();
+   \                     ??main_33:
+   \   00025A   ........     CALLA   #toInt
+    258                      toInt();
+   \   00025E   ........     CALLA   #toInt
+    259                      Left_Wheel_Off();
+   \   000262   ........     CALLA   #Left_Wheel_Off
+    260                    }
+    261                    command_sent = CLR;
+   \                     ??main_38:
+   \   000266   8243....     MOV.W   #0x0, &command_sent
+    262                    break;
+   \   00026A   6A3F         JMP     ??main_3
+    263                  case 'C':
+    264                    toInt();
+   \                     ??main_20:
+   \   00026C   ........     CALLA   #toInt
+    265                    display_1 = "Connected!";
+   \   000270   B240........ MOV.W   #`?<Constant "Connected!">`, &display_1
+    266                    display_2 = "";
+   \   000276   B240........ MOV.W   #`?<Constant "">`, &display_2
+    267                    sleep(500);
+   \   00027C   3C40F401     MOV.W   #0x1f4, R12
+   \   000280   ........     CALLA   #sleep
+    268                    command_sent = CLR;
+   \   000284   8243....     MOV.W   #0x0, &command_sent
+    269                    break;
+   \   000288   5B3F         JMP     ??main_3
+    270                  case 'S':
+    271                    toInt();
+   \                     ??main_25:
+   \   00028A   ........     CALLA   #toInt
+    272                    display_1 = "Stop";
+   \   00028E   B240........ MOV.W   #`?<Constant "Stop">`, &display_1
+    273                    display_2 = "";
+   \   000294   B240........ MOV.W   #`?<Constant "">`, &display_2
+    274                    Wheels_Off();
+   \   00029A   ........     CALLA   #Wheels_Off
+    275                    P1OUT &= ~IR_LED; 
+   \   00029E   E2C20202     BIC.B   #0x4, &0x202
+    276                    black_line_detect = CLR;
+   \   0002A2   8243....     MOV.W   #0x0, &black_line_detect
+    277                    display_adc = CLR;
+   \   0002A6   8243....     MOV.W   #0x0, &display_adc
+    278                    command_sent = CLR;
+   \   0002AA   8243....     MOV.W   #0x0, &command_sent
+    279                    countTime = CLR;
+   \   0002AE   8243....     MOV.W   #0x0, &countTime
+    280                    time = 0;
+   \   0002B2   8243....     MOV.W   #0x0, &time
+   \   0002B6   8243....     MOV.W   #0x0, &time + 2
+    281                    break;
+   \   0002BA   423F         JMP     ??main_3
+    282                  case 'F':
+    283                    toInt();
+   \                     ??main_22:
+   \   0002BC   ........     CALLA   #toInt
+    284                    display_1 = "Following"; 
+   \   0002C0   B240........ MOV.W   #`?<Constant "Following">`, &display_1
+    285                    display_2 =   "Line...";
+   \   0002C6   B240........ MOV.W   #`?<Constant "Line...">`, &display_2
+    286                    P1OUT |= IR_LED;
+   \   0002CC   E2D20202     BIS.B   #0x4, &0x202
+    287                    black_line_detect = YES;
+   \   0002D0   9243....     MOV.W   #0x1, &black_line_detect
+    288                    controls_enabled = CLR;
+   \   0002D4   8243....     MOV.W   #0x0, &controls_enabled
+    289                    command_sent = CLR;
+   \   0002D8   8243....     MOV.W   #0x0, &command_sent
+    290                    break;
+   \   0002DC   313F         JMP     ??main_3
+    291                  case 'E':
+    292                    toInt();
+   \                     ??main_21:
+   \   0002DE   ........     CALLA   #toInt
+    293                    if(command_time){
+   \   0002E2   8293....     CMP.W   #0x0, &command_time
+   \   0002E6   0D24         JEQ     ??main_39
+    294                      display_1 = "Joystick";
+   \   0002E8   B240........ MOV.W   #`?<Constant "Joystick">`, &display_1
+    295                      display_2 = "Enabled";
+   \   0002EE   B240........ MOV.W   #`?<Constant "Enabled">`, &display_2
+    296                      controls_enabled = YES;
+   \   0002F4   9243....     MOV.W   #0x1, &controls_enabled
+    297                      black_line_detect = CLR;
+   \   0002F8   8243....     MOV.W   #0x0, &black_line_detect
+    298                      Wheels_Off();
+   \   0002FC   ........     CALLA   #Wheels_Off
+   \   000300   0A3C         JMP     ??main_40
+    299                     
+    300                    }
+    301                    else{
+    302                      display_1 = "Joystick";
+   \                     ??main_39:
+   \   000302   B240........ MOV.W   #`?<Constant "Joystick">`, &display_1
+    303                      display_2 = "Disabled";
+   \   000308   B240........ MOV.W   #`?<Constant "Disabled">`, &display_2
+    304                      Wheels_Off();
+   \   00030E   ........     CALLA   #Wheels_Off
+    305                      controls_enabled = CLR;
+   \   000312   8243....     MOV.W   #0x0, &controls_enabled
+    306                  
+    307                    }
+    308                    command_sent = CLR;
+   \                     ??main_40:
+   \   000316   8243....     MOV.W   #0x0, &command_sent
+    309                    break;
+   \   00031A   123F         JMP     ??main_3
+    310                  case 'A':
+    311                    toInt();
+   \                     ??main_18:
+   \   00031C   ........     CALLA   #toInt
+    312                    display_adc = YES;
+   \   000320   9243....     MOV.W   #0x1, &display_adc
+    313                    P1OUT |= IR_LED;
+   \   000324   E2D20202     BIS.B   #0x4, &0x202
+    314                    command_sent = CLR;
+   \   000328   8243....     MOV.W   #0x0, &command_sent
+    315                    break;
+   \   00032C   093F         JMP     ??main_3
+    316                  case 'B':
+    317                    toInt();
+   \                     ??main_19:
+   \   00032E   ........     CALLA   #toInt
+    318                    P1OUT |= IR_LED;
+   \   000332   E2D20202     BIS.B   #0x4, &0x202
+    319                    display_1 = "Calibrate";
+   \   000336   B240........ MOV.W   #`?<Constant "Calibrate">`, &display_1
+    320                    display_2 = "Black...";
+   \   00033C   B240........ MOV.W   #`?<Constant "Black...">`, &display_2
+    321                    sleep(500);
+   \   000342   3C40F401     MOV.W   #0x1f4, R12
+   \   000346   ........     CALLA   #sleep
+    322                    display_1 = "";
+   \   00034A   B240........ MOV.W   #`?<Constant "">`, &display_1
+    323                    display_2 = "B";
+   \   000350   B240........ MOV.W   #`?<Constant "B">`, &display_2
+    324                    calibrate_black = YES;
+   \   000356   9243....     MOV.W   #0x1, &calibrate_black
+    325                    command_sent = CLR;
+   \   00035A   8243....     MOV.W   #0x0, &command_sent
+    326                    break;
+   \   00035E   F03E         JMP     ??main_3
+    327                  case 'W':
+    328                    toInt();
+   \                     ??main_26:
+   \   000360   ........     CALLA   #toInt
+    329                    P1OUT |= IR_LED;
+   \   000364   E2D20202     BIS.B   #0x4, &0x202
+    330                    display_1 = "Calibrate";
+   \   000368   B240........ MOV.W   #`?<Constant "Calibrate">`, &display_1
+    331                    display_2 = "White...";
+   \   00036E   B240........ MOV.W   #`?<Constant "White...">`, &display_2
+    332                    sleep(500);
+   \   000374   3C40F401     MOV.W   #0x1f4, R12
+   \   000378   ........     CALLA   #sleep
+    333                    display_1 = "";
+   \   00037C   B240........ MOV.W   #`?<Constant "">`, &display_1
+    334                    display_2 = "";
+   \   000382   B240........ MOV.W   #`?<Constant "">`, &display_2
+    335                    calibrate_white = YES;
+   \   000388   9243....     MOV.W   #0x1, &calibrate_white
+    336                    command_sent = CLR;
+   \   00038C   8243....     MOV.W   #0x0, &command_sent
+    337                    break;
+   \   000390   D73E         JMP     ??main_3
+    338                    
+    339                  }
+    340                  
+    341            
+    342                  
+    343                }
+    344              }
+    345              
+    346              if(black_line_detect){
+   \                     ??main_17:
+   \   000392   8293....     CMP.W   #0x0, &black_line_detect
+   \   000396   3824         JEQ     ??main_10
+    347                ADC_Process();
+   \   000398   ........     CALLA   #ADC_Process
+    348                Right_Wheel_Forward_On(525);
+   \   00039C   3C400D02     MOV.W   #0x20d, R12
+   \   0003A0   ........     CALLA   #Right_Wheel_Forward_On
+    349                Left_Wheel_Forward_On(500);
+   \   0003A4   3C40F401     MOV.W   #0x1f4, R12
+   \   0003A8   ........     CALLA   #Left_Wheel_Forward_On
+    350                
+    351                while(ADC_Left_Detector < 400){
+   \                     ??main_4:
+   \   0003AC   B2909001.... CMP.W   #0x190, &ADC_Left_Detector
+   \   0003B2   132C         JC      ??main_5
+    352                  Left_Wheel_Forward_On(400);
+   \   0003B4   3C409001     MOV.W   #0x190, R12
+   \   0003B8   ........     CALLA   #Left_Wheel_Forward_On
+    353                  Right_Wheel_Reverse_On(400);
+   \   0003BC   3C409001     MOV.W   #0x190, R12
+   \   0003C0   ........     CALLA   #Right_Wheel_Reverse_On
+    354                  if(command[0] == 'E')
+   \   0003C4   F2904500.... CMP.B   #0x45, &command
+   \   0003CA   0724         JEQ     ??main_5
+    355                    break;
+    356                  if(command[0] == 'S')
+   \   0003CC   F2905300.... CMP.B   #0x53, &command
+   \   0003D2   0324         JEQ     ??main_5
+    357                    break;
+    358                  ADC_Process();
+   \   0003D4   ........     CALLA   #ADC_Process
+   \   0003D8   E93F         JMP     ??main_4
+    359                }
+    360                
+    361                while(ADC_Right_Detector < 400){
+   \                     ??main_5:
+   \   0003DA   B2909001.... CMP.W   #0x190, &ADC_Right_Detector
+   \   0003E0   132C         JC      ??main_10
+    362                  Right_Wheel_Forward_On(400);
+   \   0003E2   3C409001     MOV.W   #0x190, R12
+   \   0003E6   ........     CALLA   #Right_Wheel_Forward_On
+    363                  Left_Wheel_Reverse_On(400);
+   \   0003EA   3C409001     MOV.W   #0x190, R12
+   \   0003EE   ........     CALLA   #Left_Wheel_Reverse_On
+    364                  if(command[0] == 'E')
+   \   0003F2   F2904500.... CMP.B   #0x45, &command
+   \   0003F8   0724         JEQ     ??main_10
+    365                    break;
+    366                  if(command[0] == 'S')
+   \   0003FA   F2905300.... CMP.B   #0x53, &command
+   \   000400   0324         JEQ     ??main_10
+    367                    break;
+    368                  ADC_Process();
+   \   000402   ........     CALLA   #ADC_Process
+   \   000406   E93F         JMP     ??main_5
+    369                }
+    370              }
+    371          
+    372                ADC_Process();
+   \                     ??main_10:
+   \   000408   ........     CALLA   #ADC_Process
+    373                
+    374             
+    375              
+    376              
+    377              
+    378              
+    379              if(countTime){
+   \   00040C   8293....     CMP.W   #0x0, &countTime
+   \   000410   3726         JEQ     ??main_6
+    380                counter();
+   \   000412   ........     CALLA   #counter
+   \   000416   343E         JMP     ??main_6
+   \   000418   0343         NOP
+   \   00041A                REQUIRE _A_PJOUT_L
+   \   00041A                REQUIRE _A_UCA1TXBUF_L
+   \   00041A                REQUIRE _A_PAOUT_L
+    381              }
+    382            }
+    383          }
+    384          //------------------------------------------------------------------------------
+    385          
+
+   \                                 In  segment CODE, align 2
+    386          void toInt(void){
+   \                     toInt:
+    387            j++;
+   \   000000   9253....     ADD.W   #0x1, &j
+    388            command_time = CLR;
+   \   000004   8243....     MOV.W   #0x0, &command_time
+    389            for(int i = j; i < j + INT_JUMP; i++){
+   \   000008   1E42....     MOV.W   &j, R14
+   \                     ??toInt_0:
+   \   00000C   1F42....     MOV.W   &j, R15
+   \   000010   2F52         ADD.W   #0x4, R15
+   \   000012   0E9F         CMP.W   R15, R14
+   \   000014   0D34         JGE     ??toInt_1
+    390              command_time = command_time*TEN + (command[i] - '0');
+   \   000016   1D42....     MOV.W   &command_time, R13
+   \   00001A   5F4E....     MOV.B   command(R14), R15
+   \   00001E   4F4F         MOV.B   R15, R15
+   \   000020                RPT     #0xa
+   \   000020   49180F5D     ADDX.W  R13, R15
+   \   000024   3F50D0FF     ADD.W   #0xffd0, R15
+   \   000028   824F....     MOV.W   R15, &command_time
+    391            }
+   \   00002C   1E53         ADD.W   #0x1, R14
+   \   00002E   EE3F         JMP     ??toInt_0
+    392            j = j + INT_JUMP;
+   \                     ??toInt_1:
+   \   000030   A252....     ADD.W   #0x4, &j
+    393          }
+   \   000034   1001         RETA
+    394          
+
+   \                                 In  segment CODE, align 2
+    395          void counter(void){
+   \                     counter:
+    396            HEXtoBCD(time);
+   \   000000   1C42....     MOV.W   &time, R12
+   \   000004   1D42....     MOV.W   &time + 2, R13
+   \   000008   ........     CALLA   #HEXtoBCD
+    397            display_4 = count_array;
+   \   00000C   B240........ MOV.W   #count_array, &display_4
+    398            
+    399          }
+   \   000012   1001         RETA
+    400          
+
+   \                                 In  segment CODE, align 2
+    401          void HEXtoBCD(unsigned long int hex_value){
+   \                     HEXtoBCD:
+    402            int value;
+    403            count_array[ZERO] = '0';
+   \   000000   F2403000.... MOV.B   #0x30, &count_array
+    404            value = 0;
+   \   000006   0F43         MOV.W   #0x0, R15
+    405            TA1CCR0 = CLR;
+   \   000008   82439203     MOV.W   #0x0, &0x392
+    406            
+    407            //10 millions place
+    408            value = CLR;
+   \   00000C   0F43         MOV.W   #0x0, R15
+    409            if(hex_value < 10000000) count_array[0] = '0';
+   \   00000E   3D909800     CMP.W   #0x98, R13
+   \   000012   0428         JNC     ??HEXtoBCD_7
+   \   000014   0620         JNE     ??HEXtoBCD_0
+   \   000016   3C908096     CMP.W   #0x9680, R12
+   \   00001A   032C         JC      ??HEXtoBCD_0
+   \                     ??HEXtoBCD_7:
+   \   00001C   F2403000.... MOV.B   #0x30, &count_array
+    410            while (hex_value > 9999999){
+   \                     ??HEXtoBCD_0:
+   \   000022   3D909800     CMP.W   #0x98, R13
+   \   000026   1228         JNC     ??HEXtoBCD_8
+   \   000028   0320         JNE     ??HEXtoBCD_9
+   \   00002A   3C908096     CMP.W   #0x9680, R12
+   \   00002E   0E28         JNC     ??HEXtoBCD_8
+    411              hex_value = hex_value - 10000000;
+   \                     ??HEXtoBCD_9:
+   \   000030   3C508069     ADD.W   #0x6980, R12
+   \   000034   3D6067FF     ADDC.W  #0xff67, R13
+    412              value = value + ONE;
+   \   000038   1F53         ADD.W   #0x1, R15
+    413              count_array[ZERO] = 0x30 + value;
+   \   00003A   0E12         PUSH.W  R14
+   \   00003C   C14F0000     MOV.B   R15, 0(SP)
+   \   000040   3E41         POP.W   R14
+   \   000042   7E503000     ADD.B   #0x30, R14
+   \   000046   C24E....     MOV.B   R14, &count_array
+   \   00004A   EB3F         JMP     ??HEXtoBCD_0
+    414            }
+    415            
+    416            //1 millions place
+    417            value = CLR;
+   \                     ??HEXtoBCD_8:
+   \   00004C   0F43         MOV.W   #0x0, R15
+    418            if(hex_value < 1000000) count_array[1] = '0';
+   \   00004E   3D900F00     CMP.W   #0xf, R13
+   \   000052   0428         JNC     ??HEXtoBCD_10
+   \   000054   0620         JNE     ??HEXtoBCD_1
+   \   000056   3C904042     CMP.W   #0x4240, R12
+   \   00005A   032C         JC      ??HEXtoBCD_1
+   \                     ??HEXtoBCD_10:
+   \   00005C   F2403000.... MOV.B   #0x30, &count_array + 1
+    419            while (hex_value > 999999){
+   \                     ??HEXtoBCD_1:
+   \   000062   3D900F00     CMP.W   #0xf, R13
+   \   000066   1228         JNC     ??HEXtoBCD_11
+   \   000068   0320         JNE     ??HEXtoBCD_12
+   \   00006A   3C904042     CMP.W   #0x4240, R12
+   \   00006E   0E28         JNC     ??HEXtoBCD_11
+    420              hex_value = hex_value - 1000000;
+   \                     ??HEXtoBCD_12:
+   \   000070   3C50C0BD     ADD.W   #0xbdc0, R12
+   \   000074   3D60F0FF     ADDC.W  #0xfff0, R13
+    421              value = value + ONE;
+   \   000078   1F53         ADD.W   #0x1, R15
+    422              count_array[1] = 0x30 + value;
+   \   00007A   0E12         PUSH.W  R14
+   \   00007C   C14F0000     MOV.B   R15, 0(SP)
+   \   000080   3E41         POP.W   R14
+   \   000082   7E503000     ADD.B   #0x30, R14
+   \   000086   C24E....     MOV.B   R14, &count_array + 1
+   \   00008A   EB3F         JMP     ??HEXtoBCD_1
+    423            }
+    424            
+    425             //100 thousands place
+    426            value = CLR;
+   \                     ??HEXtoBCD_11:
+   \   00008C   0F43         MOV.W   #0x0, R15
+    427            if(hex_value < 100000) count_array[2] = '0';
+   \   00008E   1D93         CMP.W   #0x1, R13
+   \   000090   0428         JNC     ??HEXtoBCD_13
+   \   000092   0620         JNE     ??HEXtoBCD_2
+   \   000094   3C90A086     CMP.W   #0x86a0, R12
+   \   000098   032C         JC      ??HEXtoBCD_2
+   \                     ??HEXtoBCD_13:
+   \   00009A   F2403000.... MOV.B   #0x30, &count_array + 2
+    428            while (hex_value > 99999){
+   \                     ??HEXtoBCD_2:
+   \   0000A0   1D93         CMP.W   #0x1, R13
+   \   0000A2   1228         JNC     ??HEXtoBCD_14
+   \   0000A4   0320         JNE     ??HEXtoBCD_15
+   \   0000A6   3C90A086     CMP.W   #0x86a0, R12
+   \   0000AA   0E28         JNC     ??HEXtoBCD_14
+    429              hex_value = hex_value - 100000;
+   \                     ??HEXtoBCD_15:
+   \   0000AC   3C506079     ADD.W   #0x7960, R12
+   \   0000B0   3D60FEFF     ADDC.W  #0xfffe, R13
+    430              value = value + ONE;
+   \   0000B4   1F53         ADD.W   #0x1, R15
+    431              count_array[2] = 0x30 + value;
+   \   0000B6   0E12         PUSH.W  R14
+   \   0000B8   C14F0000     MOV.B   R15, 0(SP)
+   \   0000BC   3E41         POP.W   R14
+   \   0000BE   7E503000     ADD.B   #0x30, R14
+   \   0000C2   C24E....     MOV.B   R14, &count_array + 2
+   \   0000C6   EC3F         JMP     ??HEXtoBCD_2
+    432            }
+    433            
+    434             //10 thousands place
+    435            value = CLR;
+   \                     ??HEXtoBCD_14:
+   \   0000C8   0F43         MOV.W   #0x0, R15
+    436            if(hex_value < 10000) count_array[3] = '0';
+   \   0000CA   0D93         CMP.W   #0x0, R13
+   \   0000CC   0428         JNC     ??HEXtoBCD_16
+   \   0000CE   0620         JNE     ??HEXtoBCD_3
+   \   0000D0   3C901027     CMP.W   #0x2710, R12
+   \   0000D4   032C         JC      ??HEXtoBCD_3
+   \                     ??HEXtoBCD_16:
+   \   0000D6   F2403000.... MOV.B   #0x30, &count_array + 3
+    437            while (hex_value > 9999){
+   \                     ??HEXtoBCD_3:
+   \   0000DC   0D93         CMP.W   #0x0, R13
+   \   0000DE   1128         JNC     ??HEXtoBCD_17
+   \   0000E0   0320         JNE     ??HEXtoBCD_18
+   \   0000E2   3C901027     CMP.W   #0x2710, R12
+   \   0000E6   0D28         JNC     ??HEXtoBCD_17
+    438              hex_value = hex_value - 10000;
+   \                     ??HEXtoBCD_18:
+   \   0000E8   3C50F0D8     ADD.W   #0xd8f0, R12
+   \   0000EC   3D63         ADDC.W  #0xffff, R13
+    439              value = value + ONE;
+   \   0000EE   1F53         ADD.W   #0x1, R15
+    440              count_array[3] = 0x30 + value;
+   \   0000F0   0E12         PUSH.W  R14
+   \   0000F2   C14F0000     MOV.B   R15, 0(SP)
+   \   0000F6   3E41         POP.W   R14
+   \   0000F8   7E503000     ADD.B   #0x30, R14
+   \   0000FC   C24E....     MOV.B   R14, &count_array + 3
+   \   000100   ED3F         JMP     ??HEXtoBCD_3
+    441            }
+    442            
+    443            //1 thousands place
+    444            value = CLR;
+   \                     ??HEXtoBCD_17:
+   \   000102   0F43         MOV.W   #0x0, R15
+    445            if(hex_value < ONETHOUSAND) count_array[4] = '0';
+   \   000104   0D93         CMP.W   #0x0, R13
+   \   000106   0428         JNC     ??HEXtoBCD_19
+   \   000108   0620         JNE     ??HEXtoBCD_4
+   \   00010A   3C90E803     CMP.W   #0x3e8, R12
+   \   00010E   032C         JC      ??HEXtoBCD_4
+   \                     ??HEXtoBCD_19:
+   \   000110   F2403000.... MOV.B   #0x30, &count_array + 4
+    446            while (hex_value > 999){
+   \                     ??HEXtoBCD_4:
+   \   000116   0D93         CMP.W   #0x0, R13
+   \   000118   1128         JNC     ??HEXtoBCD_20
+   \   00011A   0320         JNE     ??HEXtoBCD_21
+   \   00011C   3C90E803     CMP.W   #0x3e8, R12
+   \   000120   0D28         JNC     ??HEXtoBCD_20
+    447              hex_value = hex_value - ONETHOUSAND;
+   \                     ??HEXtoBCD_21:
+   \   000122   3C5018FC     ADD.W   #0xfc18, R12
+   \   000126   3D63         ADDC.W  #0xffff, R13
+    448              value = value + ONE;
+   \   000128   1F53         ADD.W   #0x1, R15
+    449              count_array[4] = 0x30 + value;
+   \   00012A   0E12         PUSH.W  R14
+   \   00012C   C14F0000     MOV.B   R15, 0(SP)
+   \   000130   3E41         POP.W   R14
+   \   000132   7E503000     ADD.B   #0x30, R14
+   \   000136   C24E....     MOV.B   R14, &count_array + 4
+   \   00013A   ED3F         JMP     ??HEXtoBCD_4
+    450            }
+    451            
+    452            //100s place
+    453            value = ZERO;
+   \                     ??HEXtoBCD_20:
+   \   00013C   0F43         MOV.W   #0x0, R15
+    454            if(hex_value < 100) count_array[5] = '0';
+   \   00013E   0D93         CMP.W   #0x0, R13
+   \   000140   0428         JNC     ??HEXtoBCD_22
+   \   000142   0620         JNE     ??HEXtoBCD_5
+   \   000144   3C906400     CMP.W   #0x64, R12
+   \   000148   032C         JC      ??HEXtoBCD_5
+   \                     ??HEXtoBCD_22:
+   \   00014A   F2403000.... MOV.B   #0x30, &count_array + 5
+    455            while(hex_value > 99){
+   \                     ??HEXtoBCD_5:
+   \   000150   0D93         CMP.W   #0x0, R13
+   \   000152   1128         JNC     ??HEXtoBCD_23
+   \   000154   0320         JNE     ??HEXtoBCD_24
+   \   000156   3C906400     CMP.W   #0x64, R12
+   \   00015A   0D28         JNC     ??HEXtoBCD_23
+    456              hex_value = hex_value - 100;
+   \                     ??HEXtoBCD_24:
+   \   00015C   3C509CFF     ADD.W   #0xff9c, R12
+   \   000160   3D63         ADDC.W  #0xffff, R13
+    457              value = value + ONE;
+   \   000162   1F53         ADD.W   #0x1, R15
+    458              count_array[5] = 0x30 + value;
+   \   000164   0E12         PUSH.W  R14
+   \   000166   C14F0000     MOV.B   R15, 0(SP)
+   \   00016A   3E41         POP.W   R14
+   \   00016C   7E503000     ADD.B   #0x30, R14
+   \   000170   C24E....     MOV.B   R14, &count_array + 5
+   \   000174   ED3F         JMP     ??HEXtoBCD_5
+    459            }
+    460            
+    461            //tens place
+    462            value=ZERO;
+   \                     ??HEXtoBCD_23:
+   \   000176   0F43         MOV.W   #0x0, R15
+    463            if(hex_value < 10) count_array[6] = '0';
+   \   000178   0D93         CMP.W   #0x0, R13
+   \   00017A   0428         JNC     ??HEXtoBCD_25
+   \   00017C   0620         JNE     ??HEXtoBCD_6
+   \   00017E   3C900A00     CMP.W   #0xa, R12
+   \   000182   032C         JC      ??HEXtoBCD_6
+   \                     ??HEXtoBCD_25:
+   \   000184   F2403000.... MOV.B   #0x30, &count_array + 6
+    464            while (hex_value > 9){
+   \                     ??HEXtoBCD_6:
+   \   00018A   0D93         CMP.W   #0x0, R13
+   \   00018C   1128         JNC     ??HEXtoBCD_26
+   \   00018E   0320         JNE     ??HEXtoBCD_27
+   \   000190   3C900A00     CMP.W   #0xa, R12
+   \   000194   0D28         JNC     ??HEXtoBCD_26
+    465              hex_value = hex_value - 10;
+   \                     ??HEXtoBCD_27:
+   \   000196   3C50F6FF     ADD.W   #0xfff6, R12
+   \   00019A   3D63         ADDC.W  #0xffff, R13
+    466              value = value + ONE;
+   \   00019C   1F53         ADD.W   #0x1, R15
+    467              count_array[6] = 0x30 + value;
+   \   00019E   0E12         PUSH.W  R14
+   \   0001A0   C14F0000     MOV.B   R15, 0(SP)
+   \   0001A4   3E41         POP.W   R14
+   \   0001A6   7E503000     ADD.B   #0x30, R14
+   \   0001AA   C24E....     MOV.B   R14, &count_array + 6
+   \   0001AE   ED3F         JMP     ??HEXtoBCD_6
+    468            }
+    469            
+    470            //1's place
+    471            count_array[7] = 0x30 + hex_value;
+   \                     ??HEXtoBCD_26:
+   \   0001B0   0E12         PUSH.W  R14
+   \   0001B2   C14C0000     MOV.B   R12, 0(SP)
+   \   0001B6   3E41         POP.W   R14
+   \   0001B8   7E503000     ADD.B   #0x30, R14
+   \   0001BC   C24E....     MOV.B   R14, &count_array + 7
+    472          }
+   \   0001C0   1001         RETA
+   \   0001C2                REQUIRE TA1CCR0
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for RESET_STRING>`:
+   \   000000   41542B434655 DC8 41H, 54H, 2BH, 43H, 46H, 55H, 4EH, 3DH
+   \            4E3D        
+   \   000008   31           DC8 31H
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "ECE 306">`:
+   \   000000   454345203330 DC8 "ECE 306"
+   \            3600        
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Project 8">`:
+   \   000000   50726F6A6563 DC8 "Project 8"
+   \            74203800    
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "">`:
+   \   000000   00           DC8 ""
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "ZHANNUM">`:
+   \   000000   5A48414E4E55 DC8 "ZHANNUM"
+   \            4D00        
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "     ">`:
+   \   000000   202020202000 DC8 "     "
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "    ">`:
+   \   000000   2020202000   DC8 "    "
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant " ">`:
+   \   000000   2000         DC8 " "
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "resetting...">`:
+   \   000000   726573657474 DC8 "resetting..."
+   \            696E672E2E2E
+   \            00          
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Connected!">`:
+   \   000000   436F6E6E6563 DC8 "Connected!"
+   \            7465642100  
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Stop">`:
+   \   000000   53746F7000   DC8 "Stop"
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Following">`:
+   \   000000   466F6C6C6F77 DC8 "Following"
+   \            696E6700    
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Line...">`:
+   \   000000   4C696E652E2E DC8 "Line..."
+   \            2E00        
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Joystick">`:
+   \   000000   4A6F79737469 DC8 "Joystick"
+   \            636B00      
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Enabled">`:
+   \   000000   456E61626C65 DC8 "Enabled"
+   \            6400        
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Disabled">`:
+   \   000000   44697361626C DC8 "Disabled"
+   \            656400      
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Calibrate">`:
+   \   000000   43616C696272 DC8 "Calibrate"
+   \            61746500    
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Black...">`:
+   \   000000   426C61636B2E DC8 "Black..."
+   \            2E2E00      
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "B">`:
+   \   000000   4200         DC8 "B"
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "White...">`:
+   \   000000   57686974652E DC8 "White..."
+   \            2E2E00      
+    473          
+    474          
+    475          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      6   HEXtoBCD
+      4   counter
+        4   -> HEXtoBCD
+     22   main
+       22   -> ADC_Process
+       22   -> Display_Process
+       22   -> Init_ADC
+       22   -> Init_Clocks
+       22   -> Init_Conditions
+       22   -> Init_LCD
+       22   -> Init_Ports
+       22   -> Init_Serial_UCA0
+       22   -> Init_Serial_UCA1
+       22   -> Init_Timers
+       22   -> Left_Wheel_Forward_On
+       22   -> Left_Wheel_Off
+       22   -> Left_Wheel_Reverse_On
+       22   -> Right_Wheel_Forward_On
+       22   -> Right_Wheel_Off
+       22   -> Right_Wheel_Reverse_On
+       22   -> Switches_Process
+       22   -> Wheels_Off
+       22   -> counter
+       22   -> sleep
+       22   -> toInt
+      4   toInt
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       6  ?<Constant "     ">
+       5  ?<Constant "    ">
+       2  ?<Constant " ">
+       1  ?<Constant "">
+       2  ?<Constant "B">
+       9  ?<Constant "Black...">
+      10  ?<Constant "Calibrate">
+      11  ?<Constant "Connected!">
+       9  ?<Constant "Disabled">
+       8  ?<Constant "ECE 306">
+       8  ?<Constant "Enabled">
+      10  ?<Constant "Following">
+       9  ?<Constant "Joystick">
+       8  ?<Constant "Line...">
+      10  ?<Constant "Project 8">
+       5  ?<Constant "Stop">
+       9  ?<Constant "White...">
+       8  ?<Constant "ZHANNUM">
+      13  ?<Constant "resetting...">
+       9  ?<Initializer for RESET_STRING>
+       2  BAUD_MODE
+     450  HEXtoBCD
+       9  RESET_STRING
+       2  TA1CCR0
+       2  Time_Sequence
+       2  _A_PAOUT_L
+       2  _A_PJOUT_L
+       2  _A_UCA1TXBUF_L
+       1  big
+       2  command_time
+       3  control_state
+       2  controls_enabled
+      10  count_array
+      20  counter
+       2  display_adc
+       2  five_msec_count
+       2  increment
+       2  j
+       1  led_smclk
+       2  leftForwardDuty
+       2  leftReverseDuty
+    1050  main
+       1  one_time
+       1  posL1
+       1  posL2
+       1  posL3
+       1  posL4
+       2  rightForwardDuty
+       2  rightReverseDuty
+       1  size_count
+      54  toInt
+
+ 
+ 1 574 bytes in segment CODE
+     8 bytes in segment DATA16_AN
+   143 bytes in segment DATA16_C
+     9 bytes in segment DATA16_I
+     9 bytes in segment DATA16_ID
+    45 bytes in segment DATA16_Z
+ 
+ 1 574 bytes of CODE  memory
+   152 bytes of CONST memory
+    54 bytes of DATA  memory (+ 8 bytes shared)
+
+Errors: none
+Warnings: none

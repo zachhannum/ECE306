@@ -1,0 +1,155 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           18/Apr/2016  17:03:33
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\TimerA1.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\TimerA1.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\TimerA1.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\TimerA1.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\TimerA1.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: TimerA0.c
+      3          //  Description: This file sets up TimerA0
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.1.3987 (6.40.1)
+      9          //------------------------------------------------------------------------------
+     10          
+     11          //------------------------------------------------------------------------------
+     12          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x380
+   \   unsigned short volatile TA1CTL
+   \                     TA1CTL:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x382
+   \   unsigned short volatile TA1CCTL0
+   \                     TA1CCTL0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x392
+   \   unsigned short volatile TA1CCR0
+   \                     TA1CCR0:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x3a0
+   \   unsigned short volatile TA1EX0
+   \                     TA1EX0:
+   \   000000                DS8 2
+     13          #include  "functions.h"
+     14          #include  "macros.h"
+     15          
+
+   \                                 In  segment CODE, align 2
+     16          void Init_Timer_A1(void){
+   \                     Init_Timer_A1:
+     17          //----------------------------------------------------------------------------
+     18          // 
+     19          //===========================================================================
+     20          // Function name: Init_Timer_A0 
+     21          //
+     22          // Description: Initializes timer A0 and sets timer A0 interrupt
+     23          //
+     24          // Passed : no variables passed
+     25          // Locals: no variables declared
+     26          // Returned: no values returned
+     27          // Globals: 
+     28          //  extern int sw1IsDebouncing;
+     29          //  extern int sw2IsDebouncing;
+     30          //  extern volatile unsigned int sw1DebounceCount;
+     31          //  extern volatile unsigned int sw2DebounceCount;
+     32          //
+     33          // Author:  Zach Hannum
+     34          // Date: Feb 2016
+     35          // Compiler: Built with IAR Embedded Workbench Version: V4.10A/W32 (6.40.1)
+     36          //===========================================================================
+     37            
+     38            TA1CTL = TASSEL__SMCLK;
+   \   000000   B24000028003 MOV.W   #0x200, &0x380
+     39            TA1CTL |= TACLR;
+   \   000006   A2D28003     BIS.W   #0x4, &0x380
+     40            TA1CTL |= MC__CONTINUOUS;
+   \   00000A   B2D020008003 BIS.W   #0x20, &0x380
+     41            TA1CTL |= ID__4; // Divide clock by 2
+   \   000010   B2D080008003 BIS.W   #0x80, &0x380
+     42            TA1CTL &= ~TAIE; // Disable Overflow Interrupt
+   \   000016   A2C38003     BIC.W   #0x2, &0x380
+     43            TA1CTL &= ~TAIFG; 
+   \   00001A   92C38003     BIC.W   #0x1, &0x380
+     44            
+     45            TA1EX0 = TAIDEX_7; // Divide clock by an additional 8
+   \   00001E   B2400700A003 MOV.W   #0x7, &0x3a0
+     46           
+     47            TA1CCR0 = TA1CCR0_INTERVAL; // CCR0
+   \   000024   B24024F49203 MOV.W   #0xf424, &0x392
+     48            TA1CCTL0 |= CCIE; // CCR0 enable interrupt
+   \   00002A   B2D010008203 BIS.W   #0x10, &0x382
+     49          
+     50            // TA0CCR1 = TA0CCR1_INTERVAL; // CCR1
+     51           // TA0CCTL1 |= CCIE; // CCR1 enable interrupt
+     52          
+     53          // TA0CCR2 = TA0CCR2_INTERVAL; // CCR2
+     54          // TA0CCTL2 |= CCIE; // CCR2 enable interrupt 
+     55            
+     56            
+     57            
+     58          }
+   \   000030   1001         RETA
+   \   000032                REQUIRE TA1CTL
+   \   000032                REQUIRE TA1EX0
+   \   000032                REQUIRE TA1CCR0
+   \   000032                REQUIRE TA1CCTL0
+     59          
+     60          
+     61          
+     62          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      4   Init_Timer_A1
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      50  Init_Timer_A1
+       2  TA1CCR0
+       2  TA1CCTL0
+       2  TA1CTL
+       2  TA1EX0
+
+ 
+ 50 bytes in segment CODE
+  8 bytes in segment DATA16_AN
+ 
+ 50 bytes of CODE memory
+  0 bytes of DATA memory (+ 8 bytes shared)
+
+Errors: none
+Warnings: none

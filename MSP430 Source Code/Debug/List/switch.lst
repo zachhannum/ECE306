@@ -1,0 +1,615 @@
+###############################################################################
+#
+# IAR C/C++ Compiler V6.40.1.950/W32 for MSP430           21/Apr/2016  15:42:11
+# Copyright 1996-2015 IAR Systems AB.
+# Standalone license - IAR Embedded Workbench for Texas Instruments MSP430, 8K KickStart Edition 6.40
+#
+#    __rt_version  =  3
+#    __double_size =  32
+#    __reg_r4      =  free
+#    __reg_r5      =  free
+#    __pic         =  no
+#    __core        =  430X
+#    __data_model  =  small
+#    __code_model  =  large
+#    Source file   =  C:\ECE-306 Code\Project 7\switch.c
+#    Command line  =  
+#        "C:\ECE-306 Code\Project 7\switch.c" -lC "C:\ECE-306 Code\Project
+#        7\Debug\List" -o "C:\ECE-306 Code\Project 7\Debug\Obj" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --debug
+#        -D__MSP430FR5739__ -e --double=32 --dlib_config "C:\Program Files
+#        (x86)\IAR Systems\Embedded Workbench 7.3\430\lib\dlib\dl430xlsfn.h"
+#        --core=430X --data_model=small -On --multiplier=32
+#        --hw_workaround=CPU40 --code_model=large
+#    List file     =  C:\ECE-306 Code\Project 7\Debug\List\switch.lst
+#    Object file   =  C:\ECE-306 Code\Project 7\Debug\Obj\switch.r43
+#
+###############################################################################
+
+C:\ECE-306 Code\Project 7\switch.c
+      1          //------------------------------------------------------------------------------
+      2          //  File: switch.c
+      3          //  Description: This file Processes the switches and changes LCD text.
+      4          //
+      5          //
+      6          //  Zach Hannum
+      7          //  Feb 2016
+      8          //  Built with IAR Embedded Workbench Version: V7.3.ONE.3987 (6.40.ONE)
+      9          //
+     10          // Globals
+     11          // --------
+     12          // extern char *display_1;
+     13          // extern char *display_2;
+     14          // extern char *display_3;
+     15          // extern char *display_1;
+     16          // extern char posL1;
+     17          // extern char posL2;
+     18          // extern char posL3;
+     19          // extern char posL4;
+     20          //------------------------------------------------------------------------------
+     21          
+     22          //------------------------------------------------------------------------------
+     23          
+     24          #include  "msp430.h"
+
+   \                                 In  segment DATA16_AN, at 0x202
+   \   union <unnamed> _A_PAOUT_L
+   \                     _A_PAOUT_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x220
+   \   union <unnamed> _A_PBIN_L
+   \                     _A_PBIN_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x322
+   \   union <unnamed> _A_PJOUT_L
+   \                     _A_PJOUT_L:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_AN, at 0x5ee
+   \   union <unnamed> _A_UCA1TXBUF_L
+   \                     _A_UCA1TXBUF_L:
+   \   000000                DS8 2
+     25          #include  "functions.h"
+     26          #include  "macros.h"
+     27          
+     28          extern char *display_1;
+     29          extern char *display_2;
+     30          extern char *display_3;
+     31          extern char *display_1;
+     32          extern char posL1;
+     33          extern char posL2;
+     34          extern char posL3;
+     35          extern char posL4;
+     36          extern volatile unsigned int ADC_Right_Detector;
+     37          extern volatile unsigned int ADC_Left_Detector;
+     38          extern volatile unsigned int ADC_Thumb;
+     39          extern int current_ADC_channel;
+     40          extern volatile int black_line_detected;
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     41          int volatile do_not_detect_black_line = ZERO;
+   \                     do_not_detect_black_line:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     42          int mode;
+   \                     mode:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     43          int count = ZERO;
+   \                     count:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     44          volatile unsigned long int time = ZERO;
+   \                     time:
+   \   000000                DS8 4
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     45          volatile int countTime = ZERO;
+   \                     countTime:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     46          volatile int countFive = ZERO;
+   \                     countFive:
+   \   000000                DS8 2
+
+   \                                 In  segment DATA16_Z, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     47          char time_recorded[5];
+   \                     time_recorded:
+   \   000000                DS8 5
+     48          extern int BAUD_MODE;
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     49          char message[TEN] = "NCSU  #1";  
+   \                     message:
+   \   000000                DS8 10
+   \   00000A                REQUIRE `?<Initializer for message>`
+
+   \                                 In  segment DATA16_Z, align 2, align-sorted
+   \   000000                REQUIRE ?cstart_init_zero
+     50          int i = ZERO;
+   \                     i:
+   \   000000                DS8 2
+     51          extern volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+     52          extern volatile unsigned int fram_rx_ring_wr;
+     53          extern char RESET_STRING[RESET_STRING_MAX];
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     54          char SSID[SSID_STRING_MAX] = "AT+S.SSIDTXT=AndroidAP";
+   \                     SSID:
+   \   000000                DS8 22
+   \   000016                REQUIRE `?<Initializer for SSID>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     55          char PASS[PASS_STRING_MAX] = "AT+S.SCFG=wifi_wpa_psk_text,jalapeno";
+   \                     PASS:
+   \   000000                DS8 36
+   \   000024                REQUIRE `?<Initializer for PASS>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     56          char PRIV[PRIV_STRING_MAX] = "AT+S.SCFG=wifi_priv_mode,2";
+   \                     PRIV:
+   \   000000                DS8 26
+   \   00001A                REQUIRE `?<Initializer for PRIV>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     57          char NET[NET_STRING_MAX] = "AT+S.SCFG=wifi_mode,1";
+   \                     NET:
+   \   000000                DS8 21
+   \   000015                REQUIRE `?<Initializer for NET>`
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     58          char SAVE[SAVE_STRING_MAX] = "AT&W";
+   \                     SAVE:
+   \   000000                DS8 4
+   \   000004                REQUIRE `?<Initializer for SAVE>`
+     59          
+
+   \                                 In  segment DATA16_I, align 1, align-sorted
+   \   000000                REQUIRE ?cstart_init_copy
+     60          char BAUD[BAUD_STRING_MAX] = "AT+S.SCFG=console1_speed,9600";
+   \                     BAUD:
+   \   000000                DS8 29
+   \   00001D                REQUIRE `?<Initializer for BAUD>`
+     61          extern volatile int black_line_detect;
+     62          
+     63          extern volatile int ip_detected;
+     64          extern char IP[SIXTEEN];
+     65          
+     66          
+     67          
+     68          
+
+   \                                 In  segment CODE, align 2
+     69          void Switches_Process(void){
+   \                     Switches_Process:
+   \   000000   0A12         PUSH.W  R10
+     70            //------------------------------------------------------------------------------
+     71            // Controls IoT Settings
+     72            //
+     73            // Globals
+     74            // --------
+     75            // extern char *display_1;
+     76            ////extern char *display_1;
+     77            ////extern char *display_2;
+     78            ////extern char *display_3;
+     79            ////extern char *display_1;
+     80            ////extern char posL1;
+     81            ////extern char posL2;
+     82            ////extern char posL3;
+     83            ////extern char posL4;
+     84            ////extern char r_adc_char[5];
+     85            ////extern char l_adc_char[5];
+     86            ////extern char v_adc_char[5];
+     87            ////extern volatile unsigned int ADC_Right_Detector;
+     88            ////extern volatile unsigned int ADC_Left_Detector;
+     89            ////extern volatile unsigned int ADC_Thumb;
+     90            ////extern int current_ADC_channel;
+     91            ////extern volatile int black_line_detected;
+     92            ////int volatile do_not_detect_black_line = ZERO;
+     93            ////int mode;
+     94            ////int count = ZERO;
+     95            ////volatile unsigned int time = ZERO;
+     96            ////volatile int countTime = ZERO;
+     97            ////volatile int countFive = ZERO;
+     98            ////char time_recorded[5];
+     99            ////extern int BAUD_MODE;
+    100            ////char message[TEN] = "NCSU  #1";  
+    101            ////int i = ZERO;
+    102            ////extern volatile char FRAM_Char_Rx[SMALL_RING_SIZE];
+    103            ////extern volatile unsigned int fram_rx_ring_wr;
+    104            ////extern char RESET_STRING[RESET_STRING_MAX];
+    105            ////char SSID[SSID_STRING_MAX] = "AT+S.SSIDTXT=AndroidAP";
+    106            ////char PASS[PASS_STRING_MAX] = "AT+S.SCFG=wifi_wpa_psk_text,jalapeno";
+    107            ////char PRIV[PRIV_STRING_MAX] = "AT+S.SCFG=wifi_priv_mode,2";
+    108            ////char NET[NET_STRING_MAX] = "AT+S.SCFG=wifi_mode,1";
+    109            ////char SAVE[SAVE_STRING_MAX] = "AT&W";
+    110            ////
+    111            ////char BAUD[BAUD_STRING_MAX] = "AT+S.SCFG=console1_speed,9600";
+    112            //
+    113            // Ports
+    114            // -----
+    115            // P4IN
+    116            // SW1  // Switch ONE
+    117            // SW2  // Switch TWO
+    118            //------------------------------------------------------------------------------
+    119            if (!(P4IN & SW1)){
+   \   000002   D2B32102     BIT.B   #0x1, &0x221
+   \   000006   042C         JC      ??Switches_Process_6
+    120              
+    121              /*    char ip_line_1 [DISPLAY_SIZE];
+    122              char ip_line_2 [DISPLAY_SIZE];
+    123              for ( int i = CLR; i < IP_LINE_MAX; i++){
+    124              ip_line_1[i] = IP[i];
+    125            }
+    126              
+    127              for( int i = CLR; i < IP_LINE_MAX; i ++){
+    128              ip_line_2[i] = IP[i+IP_LINE_MAX];
+    129            }
+    130              ip_line_1[IP_LINE_MAX] = '\0';
+    131              ip_line_2[IP_LINE_MAX] = '\0';
+    132              display_1 = ip_line_1;
+    133              display_2 = ip_line_2;
+    134              ip_detected = CLR;
+    135              sleep(2000);
+    136              display_1 = "";
+    137              display_2 = ""; */
+    138              P1OUT |= IR_LED;
+   \   000008   E2D20202     BIS.B   #0x4, &0x202
+    139              black_line_detect = YES;
+   \   00000C   9243....     MOV.W   #0x1, &black_line_detect
+    140              
+    141              
+    142            }  
+    143            
+    144            
+    145            if (!(P4IN & SW2)) {
+   \                     ??Switches_Process_6:
+   \   000010   E2B32102     BIT.B   #0x2, &0x221
+   \   000014   A62C         JC      ??Switches_Process_7
+    146              for(int i = CLR; i < SSID_STRING_MAX; i++){
+   \   000016   0A43         MOV.W   #0x0, R10
+   \                     ??Switches_Process_0:
+   \   000018   3A901600     CMP.W   #0x16, R10
+   \   00001C   0E34         JGE     ??Switches_Process_8
+    147                display_1="SSID...";
+   \   00001E   B240........ MOV.W   #`?<Constant "SSID...">`, &display_1
+    148                UCA1TXBUF = SSID[i];
+   \   000024   5F4A....     MOV.B   SSID(R10), R15
+   \   000028   4F4F         MOV.B   R15, R15
+   \   00002A   824FEE05     MOV.W   R15, &0x5ee
+    149                sleep(TENTHMSEC);
+   \   00002E   3C400A00     MOV.W   #0xa, R12
+   \   000032   ........     CALLA   #sleep
+    150              }
+   \   000036   1A53         ADD.W   #0x1, R10
+   \   000038   EF3F         JMP     ??Switches_Process_0
+    151              UCA1TXBUF = '\r';
+   \                     ??Switches_Process_8:
+   \   00003A   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    152              sleep(ONEMSEC);
+   \   000040   3C406400     MOV.W   #0x64, R12
+   \   000044   ........     CALLA   #sleep
+    153              for(int i = CLR; i < PASS_STRING_MAX; i++){
+   \   000048   0A43         MOV.W   #0x0, R10
+   \                     ??Switches_Process_1:
+   \   00004A   3A902400     CMP.W   #0x24, R10
+   \   00004E   0E34         JGE     ??Switches_Process_9
+    154                display_1="Pass...";
+   \   000050   B240........ MOV.W   #`?<Constant "Pass...">`, &display_1
+    155                UCA1TXBUF = PASS[i];
+   \   000056   5F4A....     MOV.B   PASS(R10), R15
+   \   00005A   4F4F         MOV.B   R15, R15
+   \   00005C   824FEE05     MOV.W   R15, &0x5ee
+    156                sleep(TENTHMSEC);
+   \   000060   3C400A00     MOV.W   #0xa, R12
+   \   000064   ........     CALLA   #sleep
+    157              }
+   \   000068   1A53         ADD.W   #0x1, R10
+   \   00006A   EF3F         JMP     ??Switches_Process_1
+    158              UCA1TXBUF = '\r';
+   \                     ??Switches_Process_9:
+   \   00006C   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    159              sleep(ONEMSEC);
+   \   000072   3C406400     MOV.W   #0x64, R12
+   \   000076   ........     CALLA   #sleep
+    160              for(int i = CLR; i < PRIV_STRING_MAX; i++){
+   \   00007A   0A43         MOV.W   #0x0, R10
+   \                     ??Switches_Process_2:
+   \   00007C   3A901A00     CMP.W   #0x1a, R10
+   \   000080   0E34         JGE     ??Switches_Process_10
+    161                display_1="Privacy...";
+   \   000082   B240........ MOV.W   #`?<Constant "Privacy...">`, &display_1
+    162                UCA1TXBUF = PRIV[i];
+   \   000088   5F4A....     MOV.B   PRIV(R10), R15
+   \   00008C   4F4F         MOV.B   R15, R15
+   \   00008E   824FEE05     MOV.W   R15, &0x5ee
+    163                sleep(TENTHMSEC);
+   \   000092   3C400A00     MOV.W   #0xa, R12
+   \   000096   ........     CALLA   #sleep
+    164              }
+   \   00009A   1A53         ADD.W   #0x1, R10
+   \   00009C   EF3F         JMP     ??Switches_Process_2
+    165              UCA1TXBUF = '\r';
+   \                     ??Switches_Process_10:
+   \   00009E   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    166              sleep(ONEMSEC);
+   \   0000A4   3C406400     MOV.W   #0x64, R12
+   \   0000A8   ........     CALLA   #sleep
+    167              for(int i = CLR; i < NET_STRING_MAX; i++){
+   \   0000AC   0A43         MOV.W   #0x0, R10
+   \                     ??Switches_Process_3:
+   \   0000AE   3A901500     CMP.W   #0x15, R10
+   \   0000B2   0E34         JGE     ??Switches_Process_11
+    168                display_1="Network...";
+   \   0000B4   B240........ MOV.W   #`?<Constant "Network...">`, &display_1
+    169                UCA1TXBUF = NET[i];
+   \   0000BA   5F4A....     MOV.B   NET(R10), R15
+   \   0000BE   4F4F         MOV.B   R15, R15
+   \   0000C0   824FEE05     MOV.W   R15, &0x5ee
+    170                sleep(TENTHMSEC);
+   \   0000C4   3C400A00     MOV.W   #0xa, R12
+   \   0000C8   ........     CALLA   #sleep
+    171              }
+   \   0000CC   1A53         ADD.W   #0x1, R10
+   \   0000CE   EF3F         JMP     ??Switches_Process_3
+    172              UCA1TXBUF = '\r';
+   \                     ??Switches_Process_11:
+   \   0000D0   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    173              sleep(ONEMSEC);
+   \   0000D6   3C406400     MOV.W   #0x64, R12
+   \   0000DA   ........     CALLA   #sleep
+    174              for(int i = CLR; i < SAVE_STRING_MAX; i++){
+   \   0000DE   0A43         MOV.W   #0x0, R10
+   \                     ??Switches_Process_4:
+   \   0000E0   2A92         CMP.W   #0x4, R10
+   \   0000E2   0E34         JGE     ??Switches_Process_12
+    175                display_1="Saving...";
+   \   0000E4   B240........ MOV.W   #`?<Constant "Saving...">`, &display_1
+    176                UCA1TXBUF = SAVE[i];
+   \   0000EA   5F4A....     MOV.B   SAVE(R10), R15
+   \   0000EE   4F4F         MOV.B   R15, R15
+   \   0000F0   824FEE05     MOV.W   R15, &0x5ee
+    177                sleep(TENTHMSEC);
+   \   0000F4   3C400A00     MOV.W   #0xa, R12
+   \   0000F8   ........     CALLA   #sleep
+    178              }
+   \   0000FC   1A53         ADD.W   #0x1, R10
+   \   0000FE   F03F         JMP     ??Switches_Process_4
+    179              UCA1TXBUF = '\r';
+   \                     ??Switches_Process_12:
+   \   000100   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    180              sleep(ONEMSEC);
+   \   000106   3C406400     MOV.W   #0x64, R12
+   \   00010A   ........     CALLA   #sleep
+    181              
+    182              for(int i = CLR; i < RESET_STRING_MAX; i++){
+   \   00010E   0A43         MOV.W   #0x0, R10
+   \                     ??Switches_Process_5:
+   \   000110   3A900900     CMP.W   #0x9, R10
+   \   000114   1034         JGE     ??Switches_Process_13
+    183                posL4 = CLR;
+   \   000116   C243....     MOV.B   #0x0, &posL4
+    184                display_1 = "resetting...";
+   \   00011A   B240........ MOV.W   #`?<Constant "resetting...">`, &display_1
+    185                UCA1TXBUF = RESET_STRING[i];
+   \   000120   5F4A....     MOV.B   RESET_STRING(R10), R15
+   \   000124   4F4F         MOV.B   R15, R15
+   \   000126   824FEE05     MOV.W   R15, &0x5ee
+    186                sleep(TENTHMSEC);
+   \   00012A   3C400A00     MOV.W   #0xa, R12
+   \   00012E   ........     CALLA   #sleep
+    187              }
+   \   000132   1A53         ADD.W   #0x1, R10
+   \   000134   ED3F         JMP     ??Switches_Process_5
+    188              
+    189              UCA1TXBUF = '\r';
+   \                     ??Switches_Process_13:
+   \   000136   B2400D00EE05 MOV.W   #0xd, &0x5ee
+    190              sleep(ONEMSEC);
+   \   00013C   3C406400     MOV.W   #0x64, R12
+   \   000140   ........     CALLA   #sleep
+    191              PJOUT = ~IOT_RESET;
+   \   000144   B240F7FF2203 MOV.W   #0xfff7, &0x322
+    192              sleep(ONEMSEC);
+   \   00014A   3C406400     MOV.W   #0x64, R12
+   \   00014E   ........     CALLA   #sleep
+    193              PJOUT |= IOT_RESET;
+   \   000152   B2D22203     BIS.W   #0x8, &0x322
+    194              display_1 = " ";
+   \   000156   B240........ MOV.W   #`?<Constant " ">`, &display_1
+    195              display_1 = "Done!";
+   \   00015C   B240........ MOV.W   #`?<Constant "Done!">`, &display_1
+    196              
+    197            }
+    198          //------------------------------------------------------------------------------
+    199          }
+   \                     ??Switches_Process_7:
+   \   000162   3A41         POP.W   R10
+   \   000164   1001         RETA
+   \   000166                REQUIRE _A_PBIN_L
+   \   000166                REQUIRE _A_PAOUT_L
+   \   000166                REQUIRE _A_UCA1TXBUF_L
+   \   000166                REQUIRE _A_PJOUT_L
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for message>`:
+   \   000000   4E4353552020 DC8 "NCSU  #1"
+   \            233100      
+   \   000009   00           DC8 0
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for SSID>`:
+   \   000000   41542B532E53 DC8 41H, 54H, 2BH, 53H, 2EH, 53H, 53H, 49H
+   \            5349        
+   \   000008   445458543D41 DC8 44H, 54H, 58H, 54H, 3DH, 41H, 6EH, 64H
+   \            6E64        
+   \   000010   726F69644150 DC8 72H, 6FH, 69H, 64H, 41H, 50H
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for PASS>`:
+   \   000000   41542B532E53 DC8 41H, 54H, 2BH, 53H, 2EH, 53H, 43H, 46H
+   \            4346        
+   \   000008   473D77696669 DC8 47H, 3DH, 77H, 69H, 66H, 69H, 5FH, 77H
+   \            5F77        
+   \   000010   70615F70736B DC8 70H, 61H, 5FH, 70H, 73H, 6BH, 5FH, 74H
+   \            5F74        
+   \   000018   6578742C6A61 DC8 65H, 78H, 74H, 2CH, 6AH, 61H, 6CH, 61H
+   \            6C61        
+   \   000020   70656E6F     DC8 70H, 65H, 6EH, 6FH
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for PRIV>`:
+   \   000000   41542B532E53 DC8 41H, 54H, 2BH, 53H, 2EH, 53H, 43H, 46H
+   \            4346        
+   \   000008   473D77696669 DC8 47H, 3DH, 77H, 69H, 66H, 69H, 5FH, 70H
+   \            5F70        
+   \   000010   7269765F6D6F DC8 72H, 69H, 76H, 5FH, 6DH, 6FH, 64H, 65H
+   \            6465        
+   \   000018   2C32         DC8 2CH, 32H
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for NET>`:
+   \   000000   41542B532E53 DC8 41H, 54H, 2BH, 53H, 2EH, 53H, 43H, 46H
+   \            4346        
+   \   000008   473D77696669 DC8 47H, 3DH, 77H, 69H, 66H, 69H, 5FH, 6DH
+   \            5F6D        
+   \   000010   6F64652C31   DC8 6FH, 64H, 65H, 2CH, 31H
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for SAVE>`:
+   \   000000   41542657     DC8 41H, 54H, 26H, 57H
+
+   \                                 In  segment DATA16_ID, align 1, align-sorted
+   \                     `?<Initializer for BAUD>`:
+   \   000000   41542B532E53 DC8 41H, 54H, 2BH, 53H, 2EH, 53H, 43H, 46H
+   \            4346        
+   \   000008   473D636F6E73 DC8 47H, 3DH, 63H, 6FH, 6EH, 73H, 6FH, 6CH
+   \            6F6C        
+   \   000010   65315F737065 DC8 65H, 31H, 5FH, 73H, 70H, 65H, 65H, 64H
+   \            6564        
+   \   000018   2C39363030   DC8 2CH, 39H, 36H, 30H, 30H
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "SSID...">`:
+   \   000000   535349442E2E DC8 "SSID..."
+   \            2E00        
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Pass...">`:
+   \   000000   506173732E2E DC8 "Pass..."
+   \            2E00        
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Privacy...">`:
+   \   000000   507269766163 DC8 "Privacy..."
+   \            792E2E2E00  
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Network...">`:
+   \   000000   4E6574776F72 DC8 "Network..."
+   \            6B2E2E2E00  
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Saving...">`:
+   \   000000   536176696E67 DC8 "Saving..."
+   \            2E2E2E00    
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "resetting...">`:
+   \   000000   726573657474 DC8 "resetting..."
+   \            696E672E2E2E
+   \            00          
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant " ">`:
+   \   000000   2000         DC8 " "
+
+   \                                 In  segment DATA16_C, align 1, align-sorted
+   \                     `?<Constant "Done!">`:
+   \   000000   446F6E652100 DC8 "Done!"
+    200          
+    201          
+    202          
+    203          
+
+   Maximum stack usage in bytes:
+
+   CSTACK Function
+   ------ --------
+      6   Switches_Process
+        6   -> sleep
+
+
+   Segment part sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       2  ?<Constant " ">
+       6  ?<Constant "Done!">
+      11  ?<Constant "Network...">
+       8  ?<Constant "Pass...">
+      11  ?<Constant "Privacy...">
+       8  ?<Constant "SSID...">
+      10  ?<Constant "Saving...">
+      13  ?<Constant "resetting...">
+      29  ?<Initializer for BAUD>
+      21  ?<Initializer for NET>
+      36  ?<Initializer for PASS>
+      26  ?<Initializer for PRIV>
+       4  ?<Initializer for SAVE>
+      22  ?<Initializer for SSID>
+      10  ?<Initializer for message>
+      29  BAUD
+      21  NET
+      36  PASS
+      26  PRIV
+       4  SAVE
+      22  SSID
+     358  Switches_Process
+       2  _A_PAOUT_L
+       2  _A_PBIN_L
+       2  _A_PJOUT_L
+       2  _A_UCA1TXBUF_L
+       2  count
+       2  countFive
+       2  countTime
+       2  do_not_detect_black_line
+       2  i
+      10  message
+       2  mode
+       4  time
+       5  time_recorded
+
+ 
+ 358 bytes in segment CODE
+   8 bytes in segment DATA16_AN
+  69 bytes in segment DATA16_C
+ 148 bytes in segment DATA16_I
+ 148 bytes in segment DATA16_ID
+  21 bytes in segment DATA16_Z
+ 
+ 358 bytes of CODE  memory
+ 217 bytes of CONST memory
+ 169 bytes of DATA  memory (+ 8 bytes shared)
+
+Errors: none
+Warnings: none
