@@ -16,17 +16,20 @@
         android:layout_height="200dp"
         android:layout_gravity="bottom|right"
         app:padColor="#000000"
-        android:layout_below="@+id/connectButton"
-        app:buttonColor="#ffff"/>
+        app:buttonColor="#ffff"
+        android:layout_above="@+id/controlButton"
+        android:layout_below="@+id/calibrateBlackButton"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Connect!"
         android:id="@+id/connectButton"
-        android:layout_alignParentTop="true"
 
-        android:layout_marginStart="35dp" />
+        android:layout_alignTop="@+id/powerText"
+        android:layout_toStartOf="@+id/stopButton" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -44,5 +47,75 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:id="@+id/w"></WebView>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Stop"
+        android:id="@+id/stopButton"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Follow Line"
+        android:id="@+id/lineButton"
+        android:layout_below="@+id/w"
+        android:layout_toEndOf="@+id/stopButton" />
+
+    <ToggleButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textOn="Disable Joystick"
+        android:textOff="Enable Joystick"
+        android:id="@+id/controlButton"
+        android:layout_marginBottom="73dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignEnd="@+id/joystick"
+        android:layout_toEndOf="@+id/button" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Display ADC"
+        android:id="@+id/displayADCButton"
+        android:layout_below="@+id/connectButton"
+        android:layout_alignStart="@+id/connectButton"
+        android:layout_alignEnd="@+id/connectButton" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Calibrate White"
+        android:id="@+id/calibrateWhiteButton"
+        android:layout_alignBottom="@+id/displayADCButton"
+        android:layout_alignEnd="@+id/lineButton"
+        android:layout_toEndOf="@+id/powerText" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Calibrate Black"
+        android:id="@+id/calibrateBlackButton"
+        android:layout_below="@+id/calibrateWhiteButton"
+        android:layout_alignEnd="@+id/calibrateWhiteButton"
+        android:layout_toEndOf="@+id/powerText" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ipText"
+        android:layout_alignBottom="@+id/controlButton"
+        android:layout_toStartOf="@+id/controlButton"
+        android:layout_alignEnd="@+id/powerText" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set IP"
+        android:id="@+id/IPbutton"
+        android:layout_alignBottom="@+id/controlButton"
+        android:layout_alignStart="@+id/calibrateBlackButton" />
 
 </RelativeLayout>
